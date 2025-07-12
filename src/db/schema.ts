@@ -45,3 +45,22 @@ export const verification = pgTable("verification", {
  createdAt: timestamp('created_at').$defaultFn(() => /* @__PURE__ */ new Date()),
  updatedAt: timestamp('updated_at').$defaultFn(() => /* @__PURE__ */ new Date())
 				});
+
+export const wallet = pgTable("wallet", {
+  id: text('id').primaryKey(), // Circle wallet ID
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  walletSetId: text('wallet_set_id').notNull(),
+  address: text('address').notNull(),
+  blockchain: text('blockchain').notNull(), // e.g., 'ethereum', 'arbitrum', etc.
+  createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const walletSet = pgTable("wallet_set", {
+  id: text('id').primaryKey(), // Circle wallet set ID
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});

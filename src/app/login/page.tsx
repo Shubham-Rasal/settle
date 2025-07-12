@@ -16,11 +16,11 @@ export default function LoginPage() {
                 {/* Logo */}
                 <div className="flex justify-center">
                     <Image
-                        src="/vercel.svg"
-                        alt="Logo"
-                        width={48}
-                        height={48}
-                        className="h-12 w-auto"
+                        src="/logo.png"
+                        alt="Settle Logo"
+                        width={160}
+                        height={50}
+                        className="h-16 w-auto"
                     />
                 </div>
 

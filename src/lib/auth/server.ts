@@ -1,8 +1,12 @@
 "use server";
-import { authClient } from "@/lib/auth/client";
+import { auth } from "@/lib/auth/";
+import { headers } from "next/headers";
 
 export const getSession = async () => {
-    const session = await authClient.getSession();
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+    // console.log(session);
     return session;
 };
 

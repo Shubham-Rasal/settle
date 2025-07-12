@@ -1,9 +1,8 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db";
-import { headers } from "next/headers";
 import { nextCookies } from "better-auth/next-js";
-import { user, account, session, verification } from "@/db/schema";
+import { user, account, session, verification, wallet } from "@/db/schema";
  
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -13,6 +12,7 @@ export const auth = betterAuth({
             account: account,
             session: session,
             verification: verification,
+            wallet: wallet,
         }
     }),
     plugins: [nextCookies()],

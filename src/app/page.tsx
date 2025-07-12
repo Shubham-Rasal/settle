@@ -42,25 +42,15 @@ export default function Home() {
       {/* Navbar */}
       <nav className="border-b border-border">
         <div className="container mx-auto px-4">
-          <div className="h-16 flex items-center justify-between">
+          <div className="h-12 flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link href="/" className="text-xl font-bold text-primary">
                 Settle
               </Link>
-              <div className="hidden md:flex items-center space-x-6">
-                <NavLink href="/docs">Documentation</NavLink>
-                <NavLink href="/pricing">Pricing</NavLink>
-                <NavLink href="/about">About</NavLink>
-              </div>
             </div>
             <div className="flex items-center space-x-4">
               <NavLink href="/login">Sign In</NavLink>
-              <Link 
-                href="/register" 
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
-              >
-                Get Started
-              </Link>
+              
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -43,9 +44,9 @@ const routes = [
         href: "/dashboard/customers",
     },
     {
-        label: "Analytics",
+        label: "On Ramp",
         icon: BarChart3,
-        href: "/dashboard/analytics",
+        href: "/dashboard/onramp",
     },
     {
         label: "Wallets",
@@ -74,9 +75,13 @@ export function Sidebar() {
         <div className="space-y-2 py-2 flex flex-col h-full bg-sidebar text-sidebar-foreground">
             <div className="px-3 py-1 flex-1">
                 <Link href="/dashboard" className="flex items-center pl-3 mb-8">
-                    <h1 className="text-2xl font-bold">
-                        Settle.
-                    </h1>
+                    <Image
+                        src="/logo.png"
+                        alt="Settle Logo"
+                        width={120}
+                        height={40}
+                        className="h-8 w-auto"
+                    />
                 </Link>
                 <div className="space-y-1">
                     {routes.map((route) => (

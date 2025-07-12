@@ -1,7 +1,6 @@
 
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
-import { Toaster } from "sonner";
 
 export default function DashboardLayout({
     children,
@@ -16,7 +15,6 @@ export default function DashboardLayout({
             <main className="md:pl-72">
                 <Header />
                 {children}
-            <Toaster richColors />
             </main>
         </div>
         
