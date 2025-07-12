@@ -8,12 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { authClient, useSession, changePassword } from "@/lib/auth/client"
 
 export default function SettingsPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -48,17 +47,10 @@ export default function SettingsPage() {
 
       await refetch() // Refresh session data after update
       
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
-      })
+      toast.success("Profile updated")
       router.refresh()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to update profile. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -84,19 +76,12 @@ export default function SettingsPage() {
         newPassword,
       })
 
-      toast({
-        title: "Password updated",
-        description: "Your password has been updated successfully.",
-      })
+      toast.success("Password updated")
       
       // Reset form
       e.currentTarget.reset()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update password. Please try again.",
-        variant: "destructive",
-      })
+      toast.error(error instanceof Error ? error.message : "Failed to update password. Please try again.")
     } finally {
       setIsLoading(false)
     }
