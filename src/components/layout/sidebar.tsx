@@ -22,16 +22,16 @@ const routes = [
         icon: LayoutDashboard,
         href: "/dashboard",
     },
-    {
-        label: "Payments",
-        icon: CircleDollarSign,
-        href: "/dashboard/payments",
-    },
-    {
-        label: "Cross-Chain",
-        icon: ArrowLeftRight,
-        href: "/dashboard/cross-chain",
-    },
+    // {
+    //     label: "Payments",
+    //     icon: CircleDollarSign,
+    //     href: "/dashboard/payments",
+    // },
+    // {
+    //     label: "Cross-Chain",
+    //     icon: ArrowLeftRight,
+    //     href: "/dashboard/cross-chain",
+    // },
     {
         label: "Rebalance",
         icon: RefreshCw,

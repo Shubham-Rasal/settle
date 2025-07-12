@@ -16,7 +16,7 @@ interface QuickActionProps {
     onSettings: () => void;
 }
 
-export function QuickActions({ onRebalance, onWithdraw, onSettings }: QuickActionProps) {
+export function QuickActions() {
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
@@ -32,7 +32,6 @@ export function QuickActions({ onRebalance, onWithdraw, onSettings }: QuickActio
                 <CardContent>
                     <Button
                         className="w-full justify-between"
-                        onClick={onWithdraw}
                     >
                         Withdraw Now
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -53,7 +52,6 @@ export function QuickActions({ onRebalance, onWithdraw, onSettings }: QuickActio
                 <CardContent>
                     <Button
                         className="w-full justify-between"
-                        onClick={onRebalance}
                     >
                         Rebalance Now
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -75,7 +73,6 @@ export function QuickActions({ onRebalance, onWithdraw, onSettings }: QuickActio
                     <Button
                         className="w-full justify-between"
                         variant="outline"
-                        onClick={onSettings}
                     >
                         Open Settings
                         <ArrowRight className="ml-2 h-4 w-4" />

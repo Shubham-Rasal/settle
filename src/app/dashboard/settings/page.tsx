@@ -35,7 +35,6 @@ export default function SettingsPage() {
     try {
       const formData = new FormData(e.currentTarget)
       const name = formData.get("name") as string
-      const email = formData.get("email") as string
 
       // Update profile using better-auth
       await authClient.updateUser({

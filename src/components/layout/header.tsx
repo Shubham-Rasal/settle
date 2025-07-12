@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Bell, User } from "lucide-react";
+import { authClient, useSession } from "@/lib/auth/client";
+import Link from "next/link";
 
 function getBreadcrumb(pathname: string) {
     const paths = pathname.split("/").filter(Boolean);
@@ -22,7 +24,18 @@ function getBreadcrumb(pathname: string) {
 
 export function Header() {
     const pathname = usePathname();
+    const router = useRouter();
+    const { data: session } = useSession();
     const breadcrumbs = getBreadcrumb(pathname);
+
+    const handleLogout = async () => {
+        try {
+            await authClient.signOut();
+            router.push("/login");
+        } catch (error) {
+            console.error("Failed to logout:", error);
+        }
+    };
 
     return (
         <div className="border-b">
@@ -52,15 +65,19 @@ export function Header() {
                         <DropdownMenuContent className="w-56" align="end" forceMount>
                             <DropdownMenuLabel className="font-normal">
                                 <div className="flex flex-col space-y-1">
-                                    <p className="text-sm font-medium leading-none">Admin</p>
+                                    <p className="text-sm font-medium leading-none">
+                                        {session?.user?.name || "User"}
+                                    </p>
                                     <p className="text-xs leading-none text-muted-foreground">
-                                        admin@example.com
+                                        {session?.user?.email || ""}
                                     </p>
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                                Profile Settings
+                            <DropdownMenuItem asChild>
+                                <Link href="/dashboard/settings">
+                                    Profile Settings
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                                 Billing
@@ -69,7 +86,10 @@ export function Header() {
                                 API Keys
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>
+                            <DropdownMenuItem 
+                                className="text-red-600 focus:text-red-600"
+                                onClick={handleLogout}
+                            >
                                 Log out
                             </DropdownMenuItem>
                         </DropdownMenuContent>

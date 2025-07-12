@@ -13,10 +13,9 @@ export type ChainBalance = {
 
 interface ChainBalancesProps {
     balances: ChainBalance[];
-    onRebalance: (amount: string, fromChain: "ETH" | "ARB", toChain: "ETH" | "ARB") => Promise<void>;
 }
 
-export function ChainBalances({ balances, onRebalance }: ChainBalancesProps) {
+export function ChainBalances({ balances }: ChainBalancesProps) {
     const [amount, setAmount] = useState("");
     const [fromChain, setFromChain] = useState<"ETH" | "ARB">("ETH");
     const [toChain, setToChain] = useState<"ETH" | "ARB">("ARB");
@@ -25,7 +24,7 @@ export function ChainBalances({ balances, onRebalance }: ChainBalancesProps) {
     const handleRebalance = async () => {
         try {
             setLoading(true);
-            await onRebalance(amount, fromChain, toChain);
+            // await onRebalance(amount, fromChain, toChain);
             setAmount("");
         } catch (error) {
             console.error("Rebalance failed:", error);

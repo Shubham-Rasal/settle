@@ -16,8 +16,8 @@ export default function DashboardLayout({
             <main className="md:pl-72">
                 <Header />
                 {children}
-            </main>
             <Toaster richColors />
+            </main>
         </div>
         
     );
