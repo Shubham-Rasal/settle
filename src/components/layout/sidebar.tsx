@@ -110,7 +110,7 @@ export function Sidebar() {
                             <TooltipTrigger asChild>
                                 {content}
                             </TooltipTrigger>
-                            <TooltipContent side="right" className="bg-sidebar-accent">
+                            <TooltipContent side="right" className="z-[100]">
                                 {route.label}
                             </TooltipContent>
                         </Tooltip>

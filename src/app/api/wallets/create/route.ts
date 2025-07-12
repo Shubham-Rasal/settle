@@ -42,10 +42,14 @@ export async function POST(req: Request) {
       entitySecret: process.env.CIRCLE_ENTITY_SECRET!,
     });
 
+    // If the only blockchain is SOL_DEVNET, use EOA, else use SCA
+    const isSolDevnetOnly = blockchains.length === 1 && blockchains[0] === Blockchain.SOL_DEVNET;
+    const accountType = isSolDevnetOnly ? 'EOA' : 'SCA';
+
     const response = await client.createWallets({
       blockchains: blockchains,
       count: 1,
-      accountType: 'SCA', // Smart Contract Account for developer-controlled wallets
+      accountType: accountType, // EOA for Solana Devnet, SCA otherwise
       walletSetId: walletSetId,
     });
 
@@ -65,7 +69,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(response.data);
   } catch (error: any) {
-    console.error('Error creating wallet:', error);
+    console.error('Error creating wallet:', error.response.data);
     return NextResponse.json(
       { error: error.message || 'Failed to create wallet' },
       { status: 500 }

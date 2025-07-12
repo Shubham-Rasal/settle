@@ -65,3 +65,15 @@ export const walletSet = pgTable("wallet_set", {
   createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
   updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
 });
+
+export const rebalanceSettings = pgTable("rebalance_settings", {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  treasuryWalletId: text('treasury_wallet_id').notNull().references(() => wallet.id, { onDelete: 'cascade' }),
+  autoRebalance: boolean('auto_rebalance').$default(() => false).notNull(),
+  rebalanceMode: text('rebalance_mode').$default(() => 'gas_free').notNull(), // 'gas_free' or 'fast'
+  targetBalancePercentage: integer('target_balance_percentage').$default(() => 100).notNull(), // percentage to maintain in each wallet
+  minRebalanceAmount: integer('min_rebalance_amount').$default(() => 100).notNull(), // minimum amount to trigger rebalance in USD
+  createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});

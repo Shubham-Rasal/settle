@@ -1,5 +1,5 @@
 import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
-import { user, account, session, verification, wallet, walletSet } from "@/db/schema";
+import { user, account, session, verification, wallet, walletSet, rebalanceSettings } from "@/db/schema";
 
 export const db = drizzlePg(process.env.NEON_POSTGRES_URL!,{
     schema: {
@@ -9,5 +9,6 @@ export const db = drizzlePg(process.env.NEON_POSTGRES_URL!,{
         verification: verification,
         wallet: wallet,
         walletSet: walletSet,
+        rebalanceSettings: rebalanceSettings,
     }
 });
