@@ -71,15 +71,15 @@ export function RebalanceSettings({ wallets, currentSettings, onSave }: Rebalanc
               ))}
             </SelectContent>
           </Select>
-          <p className="text-sm text-gray-500">
-            The treasury wallet will be used to rebalance funds across other wallets
+          <p className="text-sm text-muted-foreground">
+            All funds from different wallets will be rebalanced and sent to the treasury wallet.
           </p>
         </div>
 
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label>Auto-Rebalance</Label>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Automatically rebalance after every transaction
             </p>
           </div>
@@ -105,34 +105,39 @@ export function RebalanceSettings({ wallets, currentSettings, onSave }: Rebalanc
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label>Target Balance Percentage</Label>
-          <div className="flex items-center space-x-2">
-            <Input
-              type="number"
-              min={1}
-              max={100}
-              value={settings.targetBalancePercentage}
-              onChange={(e) => setSettings({ ...settings, targetBalancePercentage: parseInt(e.target.value) })}
-            />
-            <span>%</span>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Target Balance</Label>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="number"
+                min={1}
+                max={100}
+                value={settings.targetBalancePercentage}
+                onChange={(e) => setSettings({ ...settings, targetBalancePercentage: parseInt(e.target.value) })}
+              />
+              <span className="text-muted-foreground">%</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Target percentage to maintain in each wallet
+            </p>
           </div>
-          <p className="text-sm text-gray-500">
-            Target percentage of total funds to maintain in each wallet
-          </p>
-        </div>
 
-        <div className="space-y-2">
-          <Label>Minimum Rebalance Amount (USD)</Label>
-          <Input
-            type="number"
-            min={0}
-            value={settings.minRebalanceAmount}
-            onChange={(e) => setSettings({ ...settings, minRebalanceAmount: parseInt(e.target.value) })}
-          />
-          <p className="text-sm text-gray-500">
-            Minimum difference in USD to trigger a rebalance
-          </p>
+          <div className="space-y-2">
+            <Label>Minimum Rebalance</Label>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="number"
+                min={0}
+                value={settings.minRebalanceAmount}
+                onChange={(e) => setSettings({ ...settings, minRebalanceAmount: parseInt(e.target.value) })}
+              />
+              <span className="text-muted-foreground">USD</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Minimum difference to trigger rebalance
+            </p>
+          </div>
         </div>
 
         <Button onClick={handleSave} className="w-full">

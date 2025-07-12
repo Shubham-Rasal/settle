@@ -24,28 +24,9 @@ export async function GET(req: Request) {
       entitySecret: process.env.CIRCLE_ENTITY_SECRET!,
     });
 
-    const walletsWithBalances = await Promise.all(
-      wallets.map(async (wallet) => {
-        try {
-          const balanceResponse = await client.getWalletTokenBalance({
-            id: wallet.id,
-          });
+   
 
-          return {
-            ...wallet,
-            balances: balanceResponse.data?.tokenBalances || [],
-          };
-        } catch (error) {
-          console.error(`Failed to get balance for wallet ${wallet.id}:`, error);
-          return {
-            ...wallet,
-            balances: [],
-          };
-        }
-      })
-    );
-
-    return NextResponse.json(walletsWithBalances);
+    return NextResponse.json(wallets);
   } catch (error: any) {
     console.error('Error getting wallets:', error);
     return NextResponse.json(

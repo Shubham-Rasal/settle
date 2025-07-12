@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { RebalanceSettings } from "@/components/dashboard/rebalance-settings"
+import { WalletFlow } from "@/components/dashboard/wallet-flow"
 import { toast } from "sonner"
 
 interface Wallet {
@@ -29,22 +30,31 @@ export default function RebalancePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const walletsRes = await fetch('/api/wallets')
+        const [walletsRes, settingsRes] = await Promise.all([
+          fetch('/api/wallets'),
+          fetch('/api/wallets/rebalance-settings')
+        ])
 
-        if (!walletsRes.ok) {
-          throw new Error("Failed to fetch wallets")
+        if (!walletsRes.ok || !settingsRes.ok) {
+          throw new Error("Failed to fetch data")
         }
 
-        const walletsData = await walletsRes.json()
-        // Add isTreasuryWallet field to each wallet
+        const [walletsData, settingsData] = await Promise.all([
+          walletsRes.json(),
+          settingsRes.json()
+        ])
+
+        // Add isTreasuryWallet field to each wallet based on settings
         const walletsWithTreasuryFlag = walletsData.map((wallet: Wallet) => ({
           ...wallet,
-          isTreasuryWallet: false
+          isTreasuryWallet: settingsData?.treasuryWalletId === wallet.id
         }))
+        
         setWallets(walletsWithTreasuryFlag)
+        setSettings(settingsData)
       } catch (error) {
         console.error("Error fetching data:", error)
-        toast.error("Failed to load wallets")
+        toast.error("Failed to load data")
       } finally {
         setLoading(false)
       }
@@ -67,6 +77,12 @@ export default function RebalancePage() {
         throw new Error("Failed to save settings")
       }
 
+      // Update wallets with new treasury wallet flag
+      setWallets(wallets.map(wallet => ({
+        ...wallet,
+        isTreasuryWallet: newSettings.treasuryWalletId === wallet.id
+      })))
+      
       setSettings(newSettings)
       toast.success("Rebalance settings saved successfully")
     } catch (error) {
@@ -89,11 +105,19 @@ export default function RebalancePage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Rebalance Settings</h1>
-      <RebalanceSettings
-        wallets={wallets}
-        currentSettings={settings || undefined}
-        onSave={handleSaveSettings}
-      />
+      <div className="grid gap-6">
+        <RebalanceSettings
+          wallets={wallets}
+          currentSettings={settings || undefined}
+          onSave={handleSaveSettings}
+        />
+        <Card className="p-6">
+          <WalletFlow
+            wallets={wallets}
+            treasuryWalletId={settings?.treasuryWalletId || null}
+          />
+        </Card>
+      </div>
     </div>
   )
 } 
