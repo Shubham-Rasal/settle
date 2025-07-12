@@ -53,6 +53,7 @@ export const wallet = pgTable("wallet", {
   walletSetId: text('wallet_set_id').notNull(),
   address: text('address').notNull(),
   blockchain: text('blockchain').notNull(), // e.g., 'ethereum', 'arbitrum', etc.
+  controlType: text('control_type').$default(() => 'developer').notNull(), // 'developer' or 'user'
   createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
   updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
 });

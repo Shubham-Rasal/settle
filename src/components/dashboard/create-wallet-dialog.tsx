@@ -21,7 +21,11 @@ const walletTypeInfo = {
 Developer-Controlled: Private keys held by developer (via MPC, with entity secret). App signs on user's behalf.`
 }
 
-export function CreateWalletDialog() {
+interface CreateWalletDialogProps {
+  onWalletCreated?: () => void;
+}
+
+export function CreateWalletDialog({ onWalletCreated }: CreateWalletDialogProps) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState("")
   const [chain, setChain] = useState<Blockchain | "">("")
@@ -127,6 +131,7 @@ export function CreateWalletDialog() {
       console.log(walletResponse.json())
       setOpen(false)
       resetForm()
+      onWalletCreated?.()
     } catch (error: any) {
       toast.error(error.message || "Failed to create wallet")
     } finally {
