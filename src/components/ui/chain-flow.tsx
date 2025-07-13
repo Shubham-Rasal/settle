@@ -49,26 +49,26 @@ export function ChainFlow() {
     {
       id: 'arbitrum',
       type: 'chain',
-      position: { x: 300, y: 0 },
+      position: { x: 155, y: 0 },
       data: { name: 'Arbitrum', logo: '/chains/arbitrum.svg' },
     },
     {
       id: 'optimism',
       type: 'chain',
-      position: { x: 0, y: 200 },
+      position: { x: 310, y: 0 },
       data: { name: 'Optimism', logo: '/chains/optimism.svg' },
-    },
-    {
-      id: 'base',
-      type: 'chain',
-      position: { x: 300, y: 200 },
-      data: { name: 'Base', logo: '/chains/base.svg' },
     },
     {
       id: 'settle',
       type: 'chain',
-      position: { x: 150, y: 100 },
+      position: { x: 155, y: 100 },
       data: { name: 'Settle', logo: '/logo.png' },
+    },
+    {
+      id: 'base',
+      type: 'chain',
+      position: { x: 155, y: 200 },
+      data: { name: 'Base', logo: '/chains/base.svg' },
     },
   ], []);
 
@@ -79,6 +79,7 @@ export function ChainFlow() {
       target: 'settle',
       animated: true,
       style: { stroke: 'white', strokeWidth: 2 },
+      
     },
     {
       id: 'arb-settle',
@@ -88,9 +89,9 @@ export function ChainFlow() {
       style: { stroke: 'white', strokeWidth: 2 },
     },
     {
-      id: 'settle-op',
-      source: 'settle',
-      target: 'optimism',
+      id: 'op-settle',
+      source: 'optimism',
+      target: 'settle',
       animated: true,
       style: { stroke: 'white', strokeWidth: 2 },
     },
@@ -112,7 +113,7 @@ export function ChainFlow() {
         connectionMode={ConnectionMode.Loose}
         fitView
         fitViewOptions={{
-          padding: 0.5,
+          padding: 0.0,
           maxZoom: 1,
         }}
         minZoom={0.5}
