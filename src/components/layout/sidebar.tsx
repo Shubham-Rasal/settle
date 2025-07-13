@@ -38,9 +38,9 @@ const routes = [
         href: "/dashboard/rebalance",
     },
     {
-        label: "Customers",
-        icon: Users,
-        href: "/dashboard/customers",
+        label: "Transactions",
+        icon: ArrowLeftRight,
+        href: "/dashboard/transactions",
     },
     {
         label: "On Ramp",

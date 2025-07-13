@@ -1,134 +1,200 @@
 import Image from 'next/image';
 import Link from 'next/link';
-
-const chains = [
-  { name: 'Ethereum', logo: '/chains/ethereum.svg' },
-  { name: 'Arbitrum', logo: '/chains/arbitrum.svg' },
-  { name: 'Optimism', logo: '/chains/optimism.svg' },
-  { name: 'Base', logo: '/chains/base.svg' },
-  { name: 'Avalanche', logo: '/chains/avalanche.svg' },
-];
-
-const CCTPSteps = [
-  {
-    title: 'Accept',
-    description: 'Customer pays USDC on any supported chain',
-    icon: '💳'
-  },
-  {
-    title: 'Transfer',
-    description: 'Payment is automatically bridged via CCTP',
-    icon: '🌉'
-  },
-  {
-    title: 'Settle',
-    description: 'Receive USDC on your preferred chain',
-    icon: '💰'
-  }
-];
+import { ChainFlow } from '@/components/ui/chain-flow';
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <Link 
     href={href} 
-    className="text-muted-foreground hover:text-foreground transition-colors"
+    className="text-muted-foreground hover:text-foreground transition-colors px-4 py-2 text-sm"
   >
     {children}
   </Link>
 );
 
+const features = [
+  {
+    title: "Cross-Chain USDC Payments",
+    description: "Accept USDC payments on Ethereum or Arbitrum. Customers pay on their preferred chain, you receive funds where you need them.",
+    figure: (
+      <div className="grid grid-cols-2 gap-4 p-8">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 rounded-lg bg-accent/50 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 relative">
+                <Image src="/chains/ethereum.svg" alt="Ethereum" fill className="object-contain" />
+              </div>
+              <div className="flex flex-col">
+                <span>Customer Payment</span>
+                <span className="text-sm text-muted-foreground">Ethereum USDC</span>
+              </div>
+            </div>
+            <span className="font-mono">100 USDC</span>
+          </div>
+          <div className="flex items-center justify-between p-4 rounded-lg bg-accent/50 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 relative">
+                <Image src="/chains/arbitrum.svg" alt="Arbitrum" fill className="object-contain" />
+              </div>
+              <div className="flex flex-col">
+                <span>Settlement</span>
+                <span className="text-sm text-muted-foreground">Arbitrum USDC</span>
+              </div>
+            </div>
+            <span className="font-mono text-primary">+100 USDC</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-center p-4">
+          <div className="text-center space-y-2">
+            <div className="text-4xl">🌉</div>
+            <div className="text-sm text-muted-foreground">Circle CCTP V2<br/>Fast Transfer</div>
+          </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    title: "Real-Time Payment Tracking",
+    description: "Monitor all USDC transactions across chains with detailed status updates, timestamps, and on-chain verification.",
+    figure: (
+      <div className="p-6">
+        <div className="rounded-lg border bg-card">
+          <div className="p-4 border-b">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium">Recent Payments</h4>
+              <span className="text-sm text-muted-foreground">Last 24h</span>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-2 rounded-md bg-accent/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 relative">
+                    <Image src="/chains/ethereum.svg" alt="Ethereum" fill className="object-contain" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">pay_123...abc</span>
+                    <span className="text-xs text-muted-foreground">2 mins ago</span>
+                  </div>
+                </div>
+                <span className="font-mono text-sm">+50 USDC</span>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded-md bg-accent/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 relative">
+                    <Image src="/chains/arbitrum.svg" alt="Arbitrum" fill className="object-contain" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">pay_456...def</span>
+                    <span className="text-xs text-muted-foreground">15 mins ago</span>
+                  </div>
+                </div>
+                <span className="font-mono text-sm">+100 USDC</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  },
+  {
+    title: "Treasury Management",
+    description: "Automated rebalancing between chains using Circle's CCTP V2. Move USDC instantly with Fast Transfer support.",
+    figure: (
+      <div className="p-8 space-y-6">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-accent/50 border border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 relative">
+              <Image src="/chains/ethereum.svg" alt="Ethereum" fill className="object-contain" />
+            </div>
+            <div className="flex flex-col">
+              <span>Ethereum Balance</span>
+              <span className="text-sm text-muted-foreground">1,234 USDC Available</span>
+            </div>
+          </div>
+          <button className="px-3 py-1.5 text-sm bg-primary/20 text-primary rounded-full">
+            Transfer
+          </button>
+        </div>
+        <div className="flex items-center justify-between p-4 rounded-lg bg-accent/50 border border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 relative">
+              <Image src="/chains/arbitrum.svg" alt="Arbitrum" fill className="object-contain" />
+            </div>
+            <div className="flex flex-col">
+              <span>Arbitrum Balance</span>
+              <span className="text-sm text-muted-foreground">5,678 USDC Available</span>
+            </div>
+          </div>
+          <button className="px-3 py-1.5 text-sm bg-primary/20 text-primary rounded-full">
+            Transfer
+          </button>
+        </div>
+      </div>
+    )
+  }
+];
+
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      {/* Navbar */}
-      <nav className="border-b border-border">
-        <div className="container mx-auto px-4">
-          <div className="h-12 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+      {/* Top Navigation */}
+      <nav className="fixed w-full z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+        <div className="container mx-auto px-6">
+          <div className="h-14 flex items-center justify-between">
+            <div className="flex items-center space-x-6">
               <Link href="/" className="text-xl font-bold text-primary">
                 Settle
               </Link>
+              {/* <div className="hidden md:flex items-center space-x-1">
+                <NavLink href="/blog">[B] BLOG</NavLink>
+                <NavLink href="/docs">[D] DOCS</NavLink>
+                <NavLink href="/youtube">[Y] YOUTUBE</NavLink>
+                <NavLink href="/github">[G] GITHUB</NavLink>
+                <NavLink href="/meetups">[M] MEETUPS</NavLink>
+              </div> */}
             </div>
             <div className="flex items-center space-x-4">
-              <NavLink href="/login">Sign In</NavLink>
-              
+              <NavLink href="/login">[C] CONSOLE</NavLink>
             </div>
           </div>
         </div>
       </nav>
 
-      <main className="flex-grow">
+      <main className="flex-grow pt-14">
         {/* Hero Section */}
-        <div className="container mx-auto px-4 py-24">
-          <div className="text-center max-w-4xl mx-auto space-y-8">
-            <h1 className="text-5xl font-bold text-primary">
-              Universal USDC Payment Gateway for Merchants
-            </h1>
-            <p className="text-2xl text-muted-foreground mt-6">
-              Accept USDC payments from any chain. Settle wherever you want.
-            </p>
-            <div className="flex flex-col gap-4 mt-8">
-              <p className="text-xl text-muted-foreground">
-                ✨ Seamless cross-chain USDC payments
-              </p>
-              <p className="text-xl text-muted-foreground">
-                🔄 Automatic rebalancing to your preferred chain
-              </p>
-              <p className="text-xl text-muted-foreground">
-                🛡️ Powered by Circle's CCTP V2
+        <div className="container mx-auto px-6">
+          <div className="py-24 md:py-32 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-[clamp(3rem,8vw,6rem)] font-bold tracking-tight leading-none">
+                Welcome to<br />
+                <span className="text-primary">Settle</span>
+              </h1>
+              <p className="mt-12 text-[clamp(1.25rem,3vw,2rem)] leading-tight max-w-xl text-muted-foreground">
+                Universal USDC payment gateway for merchants. Accept on any chain, settle wherever you want.
               </p>
             </div>
-            
-            <div className="mt-12">
-              <span className="px-6 py-3 bg-accent text-accent-foreground rounded-full border border-border">
-                Coming Soon
-              </span>
+            <div className="h-[600px] relative">
+              <ChainFlow />
             </div>
           </div>
         </div>
 
-        {/* Supported Chains */}
-        <div className="bg-card py-20">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-semibold text-center mb-12 text-card-foreground">
-              Accept Payments Across Multiple Chains
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 max-w-4xl mx-auto">
-              {chains.map((chain) => (
-                <div key={chain.name} className="flex flex-col items-center space-y-4 p-6 rounded-xl bg-popover hover:bg-accent transition-all border border-border">
-                  <div className="w-16 h-16 relative">
-                    <Image
-                      src={chain.logo}
-                      alt={`${chain.name} logo`}
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                  <span className="text-sm font-medium text-popover-foreground">{chain.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* CCTP Explainer */}
-        <div className="container mx-auto px-4 py-24">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-semibold text-center mb-16 text-foreground">
-              How Settle Works
-            </h2>
+        {/* Features */}
+        <div className="border-t border-border py-12">
+          <div className="container mx-auto px-6">
+            <h2 className="text-lg font-medium mb-8">/ FEATURES</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {CCTPSteps.map((step, index) => (
-                <div key={step.title} className="relative">
-                  <div className="flex flex-col items-center p-8 rounded-xl bg-card border border-border hover:border-primary transition-all">
-                    <span className="text-4xl mb-4">{step.icon}</span>
-                    <h3 className="text-xl font-medium mb-3 text-card-foreground">{step.title}</h3>
-                    <p className="text-muted-foreground text-center">{step.description}</p>
+              {features.map((feature, index) => (
+                <div key={index} className="group">
+                  <div className="aspect-[4/3] bg-card rounded-lg border border-border overflow-hidden">
+                    {feature.figure}
                   </div>
-                  {index < CCTPSteps.length - 1 && (
-                    <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
-                      <span className="text-2xl text-muted-foreground">→</span>
-                    </div>
-                  )}
+                  <div className="mt-4">
+                    <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                      {feature.title} →
+                    </h3>
+                    <p className="mt-2 text-muted-foreground">
+                      {feature.description}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -137,8 +203,8 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card">
-        <div className="container mx-auto px-4 py-8">
+      <footer className="border-t border-border py-8">
+        <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center space-x-2">
               <span className="text-primary font-semibold">Settle</span>

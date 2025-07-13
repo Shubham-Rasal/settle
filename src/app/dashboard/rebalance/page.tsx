@@ -1,13 +1,12 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { blockchainNames, Blockchain } from "@/lib/types"
 import { RebalanceSettings } from "@/components/dashboard/rebalance-settings"
@@ -30,24 +29,8 @@ interface RebalanceSettingsData {
   minRebalanceAmount: number
 }
 
-interface Transaction {
-  id: string
-  sourceWalletId: string
-  treasuryWalletId: string
-  amount: number
-  sourceChain: Blockchain
-  destinationChain: Blockchain
-  status: string
-  error?: string
-  createdAt: string
-}
-
 function formatAmount(amount: number): string {
   return (amount / 1_000_000).toFixed(2)
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleString()
 }
 
 function ManualRebalance({ wallets, treasuryWallet }: { wallets: Wallet[], treasuryWallet: Wallet | null }) {
@@ -146,98 +129,6 @@ function ManualRebalance({ wallets, treasuryWallet }: { wallets: Wallet[], treas
   )
 }
 
-function TransactionHistory({ transactions }: { transactions: Transaction[] }) {
-  // Show toast notifications for transaction status changes
-  useEffect(() => {
-    if (!transactions) return
-
-    transactions.forEach((transaction) => {
-      switch (transaction.status) {
-        case "APPROVING":
-          toast.loading("Approving USDC transfer...", {
-            id: `approve-${transaction.id}`,
-          })
-          break
-        case "BURNING":
-          toast.dismiss(`approve-${transaction.id}`)
-          toast.loading("Burning USDC on source chain...", {
-            id: `burn-${transaction.id}`,
-          })
-          break
-        case "ATTESTING":
-          toast.dismiss(`burn-${transaction.id}`)
-          toast.loading("Getting Circle attestation...", {
-            id: `attest-${transaction.id}`,
-          })
-          break
-        case "MINTING":
-          toast.dismiss(`attest-${transaction.id}`)
-          toast.loading("Minting USDC on destination chain...", {
-            id: `mint-${transaction.id}`,
-          })
-          break
-        case "COMPLETED":
-          toast.dismiss(`mint-${transaction.id}`)
-          toast.success("Rebalance completed successfully!")
-          break
-        case "FAILED":
-          // Dismiss any pending toasts for this transaction
-          toast.dismiss(`approve-${transaction.id}`)
-          toast.dismiss(`burn-${transaction.id}`)
-          toast.dismiss(`attest-${transaction.id}`)
-          toast.dismiss(`mint-${transaction.id}`)
-          toast.error(`Rebalance failed: ${transaction.error || "Unknown error"}`)
-          break
-      }
-    })
-  }, [transactions])
-
-  return (
-    <Card className="p-6">
-      <h2 className="text-lg font-semibold mb-4">Transaction History</h2>
-      <div className="relative overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>From Chain</TableHead>
-              <TableHead>To Chain</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transactions.map((tx) => (
-              <TableRow key={tx.id}>
-                <TableCell>{formatDate(tx.createdAt)}</TableCell>
-                <TableCell>{blockchainNames[tx.sourceChain]}</TableCell>
-                <TableCell>{blockchainNames[tx.destinationChain]}</TableCell>
-                <TableCell>{formatAmount(tx.amount)} USDC</TableCell>
-                <TableCell>
-                  <span className={`capitalize ${
-                    tx.status === 'COMPLETED' ? 'text-green-600' :
-                    tx.status === 'FAILED' ? 'text-red-600' :
-                    'text-yellow-600'
-                  }`}>
-                    {tx.status}
-                  </span>
-                </TableCell>
-              </TableRow>
-            ))}
-            {transactions.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
-                  No transactions yet
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </Card>
-  )
-}
-
 function LoadingSkeleton() {
   return (
     <div className="grid gap-6">
@@ -289,10 +180,6 @@ function LoadingSkeleton() {
           <Skeleton className="h-[200px]" /> {/* Flow skeleton */}
         </Card>
       </div>
-
-      <Card className="p-6">
-        <Skeleton className="h-[300px]" /> {/* Transaction history skeleton */}
-      </Card>
     </div>
   )
 }
@@ -316,16 +203,6 @@ export default function RebalancePage() {
       if (!response.ok) throw new Error("Failed to fetch settings")
       return response.json()
     },
-  })
-
-  const { data: transactions, isLoading: transactionsLoading } = useQuery({
-    queryKey: ["rebalance-transactions"],
-    queryFn: async () => {
-      const response = await fetch("/api/wallets/rebalance")
-      if (!response.ok) throw new Error("Failed to fetch transactions")
-      return response.json()
-    },
-    refetchInterval: 5000, // Poll every 5 seconds
   })
 
   const walletsWithTreasuryFlag = wallets?.map((wallet: Wallet) => ({
@@ -359,7 +236,7 @@ export default function RebalancePage() {
     }
   }
 
-  if (walletsLoading || settingsLoading || transactionsLoading) {
+  if (walletsLoading || settingsLoading) {
     return (
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Rebalance Settings</h1>
@@ -387,7 +264,6 @@ export default function RebalancePage() {
             />
           </Card>
         </div>
-        <TransactionHistory transactions={transactions || []} />
       </div>
     </div>
   )
