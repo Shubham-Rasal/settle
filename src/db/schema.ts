@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, jsonb } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 					id: text('id').primaryKey(),
@@ -74,6 +74,26 @@ export const rebalanceSettings = pgTable("rebalance_settings", {
   rebalanceMode: text('rebalance_mode').$default(() => 'gas_free').notNull(), // 'gas_free' or 'fast'
   targetBalancePercentage: integer('target_balance_percentage').$default(() => 100).notNull(), // percentage to maintain in each wallet
   minRebalanceAmount: integer('min_rebalance_amount').$default(() => 100).notNull(), // minimum amount to trigger rebalance in USD
+  createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const rebalanceTransaction = pgTable("rebalance_transaction", {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  sourceWalletId: text('source_wallet_id').notNull().references(() => wallet.id, { onDelete: 'cascade' }),
+  treasuryWalletId: text('treasury_wallet_id').notNull().references(() => wallet.id, { onDelete: 'cascade' }),
+  amount: integer('amount').notNull(), // Amount in smallest unit (e.g., 1000000 for 1 USDC)
+  sourceChain: text('source_chain').notNull(),
+  destinationChain: text('destination_chain').notNull(),
+  status: text('status').notNull(), // 'pending', 'approving', 'burning', 'attesting', 'minting', 'completed', 'failed'
+  error: text('error'),
+  approveTransactionId: text('approve_transaction_id'),
+  burnTransactionId: text('burn_transaction_id'),
+  mintTransactionId: text('mint_transaction_id'),
+  messageBytes: text('message_bytes'),
+  messageHash: text('message_hash'),
+  attestation: text('attestation'),
   createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
   updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
 });

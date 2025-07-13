@@ -77,21 +77,7 @@ export function WalletCard({ name, chain, address, balances, onRefresh }: Wallet
             </div>
           </div>
 
-          <div className="space-y-2">
-            <span className="text-sm font-medium">Balances:</span>
-            {balances.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No tokens found</div>
-            ) : (
-              <div className="space-y-1">
-                {balances.map((balance) => (
-                  <div key={balance.tokenId} className="flex justify-between text-sm">
-                    <span>{balance.token.symbol}</span>
-                    <span>{balance.amount}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            
         </div>
       </CardContent>
     </Card>
