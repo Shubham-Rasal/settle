@@ -7,17 +7,6 @@ import { getSession } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
 
 // Mock data
-const mockMetrics: MetricData = {
-    totalVolume: "0.04 GB",
-    volumeChange: 0,
-    activeCustomers: 0.28,
-    customerChange: 0,
-    successfulPayments: 0.04,
-    paymentChange: 0,
-    avgTransactionSize: "0 GB",
-    transactionSizeChange: 0,
-};
-
 const mockPayments: Payment[] = [
     {
         id: "pay_123",
@@ -55,9 +44,15 @@ export default async function DashboardPage() {
         redirect("/login")
     }
 
+    // Fetch metrics from the API
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/metrics`, {
+        cache: 'no-store',
+    });
+    const metrics = await res.json();
+
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
-            <SummaryMetrics data={mockMetrics} />
+            <SummaryMetrics data={metrics} />
             <Separator />
             <div className="space-y-4">
                 <div>
