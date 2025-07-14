@@ -6,6 +6,7 @@ import { WalletCard } from "@/components/dashboard/wallet-card"
 import { Blockchain, blockchainNames } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TokenBalance {
   tokenId: string;
@@ -57,9 +58,30 @@ export default function WalletsPage() {
           <h1 className="text-2xl font-bold">Wallets</h1>
           <CreateWalletDialog />
         </div>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        </div>
+        <Tabs defaultValue="developer" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="developer" className="flex gap-2">
+              Developer-Controlled
+            </TabsTrigger>
+            <TabsTrigger value="user" className="flex gap-2">
+              User-Controlled
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="developer" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <CardSkeleton key={i} />
+              ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="user" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <CardSkeleton key={i} />
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     )
   }
@@ -135,6 +157,33 @@ export default function WalletsPage() {
           )}
         </TabsContent>
       </Tabs>
+    </div>
+  )
+}
+
+function CardSkeleton() {
+  return (
+    <div className="border rounded-lg bg-card p-4 space-y-4 shadow-sm">
+      <div className="flex flex-row items-center justify-between pb-2">
+        <Skeleton className="h-6 w-32" />
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-6 w-6 rounded-full" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+      </div>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-12" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+          </div>
+        </div>
+      </div>
     </div>
   )
 } 

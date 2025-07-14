@@ -44,16 +44,10 @@ export default async function DashboardPage() {
         redirect("/login")
     }
 
-    // Fetch metrics from the API
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/metrics`, {
-        cache: 'no-store',
-    });
-    const metrics = await res.json();
 
     return (
         <div className="flex-1 space-y-4 p-8 pt-6">
-            <SummaryMetrics data={metrics} />
-            <Separator />
+            {/* <Separator /> */}
             <div className="space-y-4">
                 <div>
                     <h3 className="text-lg font-medium mb-4">Quick Actions</h3>
