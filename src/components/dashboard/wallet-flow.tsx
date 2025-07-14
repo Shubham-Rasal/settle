@@ -43,7 +43,7 @@ function WalletNode({ data }: { data: { wallet: Wallet; isTreasury: boolean } })
         </Badge>
       </div>
       <div className="mt-1.5 text-xs text-muted-foreground truncate">
-        {wallet.address}
+        {wallet.address.slice(0, 6) + '...' + wallet.address.slice(-4)}
       </div>
       {!isTreasury && (
         <Handle

@@ -43,9 +43,9 @@ const routes = [
         href: "/dashboard/transactions",
     },
     {
-        label: "On Ramp",
-        icon: BarChart3,
-        href: "/dashboard/onramp",
+        label: "Checkout",
+        icon: CircleDollarSign,
+        href: "/dashboard/checkout",
     },
     {
         label: "Wallets",
