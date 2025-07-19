@@ -41,6 +41,8 @@ export async function GET(req: Request) {
       id: walletId,
     });
 
+    console.log("response", response.data);
+
     return NextResponse.json(response.data);
   } catch (error: any) {
     console.error('Error getting wallet balance:', error);

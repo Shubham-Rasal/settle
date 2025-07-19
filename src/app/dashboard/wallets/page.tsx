@@ -8,20 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface TokenBalance {
-  tokenId: string;
-  amount: string;
-  token: {
-    symbol: string;
-  };
-}
+
 
 interface Wallet {
   id: string;
   name: string;
   blockchain: Blockchain;
   address: string;
-  balances: TokenBalance[];
   controlType: "user" | "developer";
 }
 
@@ -47,6 +40,8 @@ export default function WalletsPage() {
       setIsLoading(false)
     }
   }
+
+
 
   const developerWallets = wallets.filter(wallet => wallet.controlType === "developer")
   const userWallets = wallets.filter(wallet => wallet.controlType === "user")
@@ -124,10 +119,10 @@ export default function WalletsPage() {
               {developerWallets.map((wallet) => (
                 <WalletCard
                   key={wallet.id}
+                  id={wallet.id}
                   name={wallet.name}
                   chain={wallet.blockchain}
                   address={wallet.address}
-                  balances={wallet.balances}
                   onRefresh={fetchWallets}
                 />
               ))}
@@ -146,10 +141,10 @@ export default function WalletsPage() {
               {userWallets.map((wallet) => (
                 <WalletCard
                   key={wallet.id}
+                  id={wallet.id}
                   name={wallet.name}
                   chain={wallet.blockchain}
                   address={wallet.address}
-                  balances={wallet.balances}
                   onRefresh={fetchWallets}
                 />
               ))}

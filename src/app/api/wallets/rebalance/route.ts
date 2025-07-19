@@ -11,7 +11,7 @@ import Web3 from "web3";
 const CIRCLE_API_KEY = process.env.CIRCLE_API_KEY!;
 const CIRCLE_ENTITY_SECRET = process.env.CIRCLE_ENTITY_SECRET!;
 
-const web3 = new Web3();
+const web3 = new Web3("https://eth-sepolia.g.alchemy.com/v2/oE0TIJ9A_G8oeKEuQGJ-H");
 // Get rebalance transactions
 export async function GET(req: Request) {
   try {
@@ -168,22 +168,42 @@ export async function POST(req: Request) {
       })
       .where(eq(rebalanceTransaction.id, transaction[0].id));
 
-    //get the trasaction
-    const transactionResponse = await client.getTransaction({
-      id: depositResponse.data.id,
-    });
+    console.log("Deposit transaction created:", depositResponse.data.id);
+
+    //get the transaction
+
+
+    // let transactionResponse;
+    // while (true) {
+    //   transactionResponse = await client.getTransaction({
+    //     id: depositResponse.data.id,
+    //   });
+    //   const state = transactionResponse.data?.transaction?.state;
+    //   console.log(`Polling transaction state: ${state}`);
+    //   if (state === "CONFIRMED") {
+    //     console.log("Transaction confirmed, here's the hash", transactionResponse.data?.transaction?.txHash);
+    //     break;
+    //   }
+    //   if (state === "FAILED") {
+    //     throw new Error("Transaction failed");
+    //   }
+    //   // Wait for a few seconds before polling again
+    //   await new Promise((resolve) => setTimeout(resolve, 5000));
+    // }
 
     //sleep for 10 seconds
 
-    if (!transactionResponse.data?.transaction?.txHash) {
-      throw new Error("Failed to get transaction");
-    }
+    // if (!transactionResponse.data?.transaction?.txHash) {
+    //   throw new Error("Failed to get transaction");
+    // }
 
     //get the message bytes
     // get messageBytes from EVM logs using txHash of the transaction.
     const transactionReceipt = await web3.eth.getTransactionReceipt(
-      transactionResponse.data.transaction.txHash
+      "0x804b7833e73dd1b210b3f2972ea55ffac8e06066cb380a29e73555b38d7133d1"
     );
+
+    console.log("transactionReceipt", transactionReceipt);
 
     let messageHash = "";
     const eventTopic = web3.utils.keccak256("MessageSent(bytes)") as string;
