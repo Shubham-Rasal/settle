@@ -173,46 +173,47 @@ export async function POST(req: Request) {
     //get the transaction
 
 
-    // let transactionResponse;
-    // while (true) {
-    //   transactionResponse = await client.getTransaction({
-    //     id: depositResponse.data.id,
-    //   });
-    //   const state = transactionResponse.data?.transaction?.state;
-    //   console.log(`Polling transaction state: ${state}`);
-    //   if (state === "CONFIRMED") {
-    //     console.log("Transaction confirmed, here's the hash", transactionResponse.data?.transaction?.txHash);
-    //     break;
-    //   }
-    //   if (state === "FAILED") {
-    //     throw new Error("Transaction failed");
-    //   }
-    //   // Wait for a few seconds before polling again
-    //   await new Promise((resolve) => setTimeout(resolve, 5000));
-    // }
+    let transactionResponse;
+    while (true) {
+      transactionResponse = await client.getTransaction({
+        id: depositResponse.data.id,
+      });
+      const state = transactionResponse.data?.transaction?.state;
+      console.log(`Polling transaction state: ${state}`);
+      if (state === "CONFIRMED") {
+        console.log("Transaction confirmed, here's the hash", transactionResponse.data?.transaction?.txHash);
+        break;
+      }
+      if (state === "FAILED") {
+        throw new Error("Transaction failed");
+      }
+      // Wait for a few seconds before polling again
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
 
     //sleep for 10 seconds
 
-    // if (!transactionResponse.data?.transaction?.txHash) {
-    //   throw new Error("Failed to get transaction");
-    // }
+    if (!transactionResponse.data?.transaction?.txHash) {
+      throw new Error("Failed to get transaction");
+    }
 
     //get the message bytes
     // get messageBytes from EVM logs using txHash of the transaction.
     const transactionReceipt = await web3.eth.getTransactionReceipt(
-      "0x804b7833e73dd1b210b3f2972ea55ffac8e06066cb380a29e73555b38d7133d1"
+      transactionResponse.data?.transaction?.txHash
     );
 
     console.log("transactionReceipt", transactionReceipt);
 
     let messageHash = "";
+    let messageBytes = "";
     const eventTopic = web3.utils.keccak256("MessageSent(bytes)") as string;
     if (transactionReceipt.logs) {
       const log = transactionReceipt.logs.find(
         (l) => l.topics?.[0] === eventTopic
       );
       if (log && log.data) {
-        const messageBytes = web3.eth.abi.decodeParameters(
+        messageBytes = web3.eth.abi.decodeParameters(
           ["bytes"],
           log.data
         )[0] as string;
@@ -222,15 +223,25 @@ export async function POST(req: Request) {
     }
 
     //sleep for 10 seconds
-    await new Promise((resolve) => setTimeout(resolve, 10000)); 
+    // await new Promise((resolve) => setTimeout(resolve, 10000)); 
+
+    // console.log("messageHash", messageHash);
 
     //fetch attestation
     // Get attestation signature from iris-api.circle.com
-    const attestationResponse = await fetch(
+    let attestationResponse = { status: 'pending',attestation: '' }
+    while (attestationResponse.status != 'complete') {
+    const response = await fetch(
         `https://iris-api-sandbox.circle.com/attestations/${messageHash}`
       );
-      const {messageBytes, attestation} = await attestationResponse.json();
-      console.log(messageBytes, attestation);
+      attestationResponse = await response.json();
+      console.log(attestationResponse);
+      if (attestationResponse.status === 'pending' || attestationResponse.status === 'processing' ) {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      }
+    }
+
+    const {attestation} = attestationResponse;
     
 
     const mintResponse = await client.createContractExecutionTransaction({

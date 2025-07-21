@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { blockchainNames, Blockchain } from "@/lib/types"
 import { RebalanceSettings } from "@/components/dashboard/rebalance-settings"
 import { WalletFlow } from "@/components/dashboard/wallet-flow"
+import { TokenBalance } from "@/components/dashboard/token-balance"
 import { Skeleton } from "@/components/ui/skeleton"
 
 interface Wallet {
@@ -33,8 +34,17 @@ function formatAmount(amount: number): string {
   return (amount / 1_000_000).toFixed(2)
 }
 
-function ManualRebalance({ wallets, treasuryWallet }: { wallets: Wallet[], treasuryWallet: Wallet | null }) {
-  const [selectedWallet, setSelectedWallet] = useState("")
+function ManualRebalance({ 
+  wallets, 
+  treasuryWallet, 
+  selectedWallet, 
+  onWalletSelect 
+}: { 
+  wallets: Wallet[]
+  treasuryWallet: Wallet | null
+  selectedWallet: string
+  onWalletSelect: (walletId: string) => void
+}) {
   const [amount, setAmount] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const queryClient = useQueryClient()
@@ -64,7 +74,7 @@ function ManualRebalance({ wallets, treasuryWallet }: { wallets: Wallet[], treas
       const transaction = await response.json()
       queryClient.invalidateQueries({ queryKey: ["rebalance-transactions"] })
       toast.success("Rebalance started successfully")
-      setSelectedWallet("")
+      onWalletSelect("")
       setAmount("")
     } catch (error) {
       console.error("Error starting rebalance:", error)
@@ -88,7 +98,7 @@ function ManualRebalance({ wallets, treasuryWallet }: { wallets: Wallet[], treas
       <div className="space-y-4">
         <div className="space-y-2">
           <Label>Source Wallet</Label>
-          <Select value={selectedWallet} onValueChange={setSelectedWallet}>
+          <Select value={selectedWallet} onValueChange={onWalletSelect}>
             <SelectTrigger>
               <SelectValue placeholder="Select a wallet" />
             </SelectTrigger>
@@ -101,6 +111,17 @@ function ManualRebalance({ wallets, treasuryWallet }: { wallets: Wallet[], treas
             </SelectContent>
           </Select>
         </div>
+
+        {selectedWallet && (
+          <div className="space-y-2">
+            <Label>Wallet Balance</Label>
+            <TokenBalance 
+              walletId={selectedWallet} 
+              walletName={sourceWallets.find(w => w.id === selectedWallet)?.name}
+              compact={true}
+            />
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label>Amount (USDC)</Label>
@@ -186,6 +207,7 @@ function LoadingSkeleton() {
 
 export default function RebalancePage() {
   const queryClient = useQueryClient()
+  const [selectedWallet, setSelectedWallet] = useState("")
 
   const { data: wallets, isLoading: walletsLoading } = useQuery({
     queryKey: ["wallets"],
@@ -255,7 +277,12 @@ export default function RebalancePage() {
           onSave={handleSaveSettings}
         />
         <div className="grid md:grid-cols-2 gap-6">
-          <ManualRebalance wallets={walletsWithTreasuryFlag} treasuryWallet={treasuryWallet} />
+          <ManualRebalance 
+            wallets={walletsWithTreasuryFlag} 
+            treasuryWallet={treasuryWallet}
+            selectedWallet={selectedWallet}
+            onWalletSelect={setSelectedWallet}
+          />
           <Card className="p-6">
             <h2 className="text-lg font-semibold mb-4">Wallet Flow</h2>
             <WalletFlow
