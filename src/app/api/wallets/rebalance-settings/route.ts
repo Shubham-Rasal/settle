@@ -3,6 +3,7 @@ import { db } from "@/db"
 import { rebalanceSettings, wallet } from "@/db/schema"
 import { eq, and } from "drizzle-orm"
 import { getSession } from "@/lib/auth/server"
+import { getFeatureFlags } from "@/lib/feature-flags"
 
 export async function GET(req: Request) {
   try {
@@ -29,6 +30,8 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
+    const featureFlags = getFeatureFlags()
+    
     const body = await req.json()
     const {
       treasuryWalletId,
@@ -37,6 +40,9 @@ export async function POST(req: Request) {
       targetBalancePercentage,
       minRebalanceAmount
     } = body
+
+    // Override autoRebalance to false if feature flag is disabled
+    const finalAutoRebalance = autoRebalance && featureFlags.autoRebalancing
 
     if (!treasuryWalletId) {
       return new NextResponse("Treasury wallet ID is required", { status: 400 })
@@ -64,7 +70,7 @@ export async function POST(req: Request) {
         .update(rebalanceSettings)
         .set({
           treasuryWalletId,
-          autoRebalance,
+          autoRebalance: finalAutoRebalance,
           rebalanceMode,
           targetBalancePercentage,
           minRebalanceAmount,
@@ -76,7 +82,7 @@ export async function POST(req: Request) {
         id: crypto.randomUUID(),
         userId: session.user.id,
         treasuryWalletId,
-        autoRebalance,
+        autoRebalance: finalAutoRebalance,
         rebalanceMode,
         targetBalancePercentage,
         minRebalanceAmount,

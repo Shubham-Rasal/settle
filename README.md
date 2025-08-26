@@ -109,6 +109,7 @@ Crypto-native merchants face fragmented liquidity and complex user experiences w
    - `CIRCLE_API_KEY`
    - `CIRCLE_ENTITY_SECRET`
    - `NEON_POSTGRES_URL` (or your Postgres connection string)
+   - `NEXT_PUBLIC_ENABLE_AUTO_REBALANCING` (set to 'true' to enable auto-rebalancing feature, default: 'false')
    - RPC URLs for Ethereum/Arbitrum
 
 4. **Run the development server:**
@@ -132,10 +133,20 @@ Crypto-native merchants face fragmented liquidity and complex user experiences w
 
 ---
 
+## Feature Flags
+
+Settle uses feature flags to manage feature rollouts. Available flags:
+
+- **Auto-Rebalancing** (`NEXT_PUBLIC_ENABLE_AUTO_REBALANCING`): 
+  - **Default:** `false` (Coming Soon)
+  - **Description:** Enables automatic rebalancing of funds after transactions
+  - **To Enable:** Set environment variable to `'true'`
+  - **When Disabled:** Auto-rebalance toggle shows "Coming Soon" badge and is disabled
+
 ## Roadmap
 
 - Add support for more chains (Base, Optimism, Avalanche, Solana, etc.)
-- Auto-rebalancing and advanced treasury management
+- Auto-rebalancing and advanced treasury management (currently behind feature flag)
 - Enhanced analytics and reporting
 - Programmable wallets and advanced merchant controls
 

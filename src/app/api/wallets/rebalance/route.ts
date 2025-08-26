@@ -257,10 +257,24 @@ export async function POST(req: Request) {
         }
       });
 
-    console.log(mintResponse.data);
-    
+    //add to db
+    await db.insert(rebalanceTransaction).values({
+      id: uuidv4(),
+      userId: session.user.id,
+      sourceWalletId: sourceWallet.id,
+      treasuryWalletId: treasuryWallet.treasuryWalletId,
+      amount: amount,
+      sourceChain: sourceWallet.blockchain,
+      destinationChain: treasuryWallet.rebalanceMode,
+      status: "MINTING",
+      mintTransactionId: mintResponse.data?.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
 
-    return NextResponse.json(transaction[0]);
+    console.log(mintResponse.data);
+
+    return NextResponse.json(transaction);
   } catch (error: any) {
     console.error(
       "Error creating rebalance transaction:",

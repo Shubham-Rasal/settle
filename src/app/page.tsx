@@ -1,6 +1,11 @@
+"use client";
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChainFlow } from '@/components/ui/chain-flow';
+import { Button } from '@/components/ui/button';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 
 const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <Link 
@@ -133,6 +138,8 @@ const features = [
 ];
 
 export default function Home() {
+  const { address, isConnected } = useAccount();
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* Top Navigation */}
@@ -151,7 +158,8 @@ export default function Home() {
                 <NavLink href="/meetups">[M] MEETUPS</NavLink>
               </div> */}
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
+              <ConnectButton />
               <NavLink href="/login">[C] CONSOLE</NavLink>
             </div>
           </div>
@@ -170,6 +178,31 @@ export default function Home() {
               <p className="mt-8 sm:mt-12 text-[clamp(1.125rem,2.5vw,2rem)] leading-tight max-w-xl text-muted-foreground">
                 Universal USDC payment gateway for merchants. Accept on any chain, settle wherever you want.
               </p>
+              <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-4">
+                {isConnected ? (
+                  <div className="flex flex-col gap-4">
+                    <p className="text-sm text-primary">
+                      ✓ Wallet Connected: {address?.slice(0, 6)}...{address?.slice(-4)}
+                    </p>
+                    <Link href="/dashboard">
+                      <Button size="lg" className="w-full sm:w-auto">
+                        Go to Dashboard →
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex justify-center">
+                      <ConnectButton />
+                    </div>
+                    <Link href="/login">
+                      <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                        Sign In with Email
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="h-[400px] sm:h-[500px] md:h-[600px] relative">
               <ChainFlow />

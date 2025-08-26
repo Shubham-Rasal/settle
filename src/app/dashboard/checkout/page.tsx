@@ -1,23 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Check } from "lucide-react";
-
-const CHAINS = [
-  { label: "Ethereum", value: "ethereum" },
-  { label: "Polygon", value: "polygon" },
-  { label: "Arbitrum", value: "arbitrum" },
-  { label: "Optimism", value: "optimism" },
-  { label: "Base", value: "base" },
-  { label: "Avalanche", value: "avalanche" },
-  { label: "Solana", value: "solana" },
-];
+import { Plus } from "lucide-react";
+import { CreateCheckoutDialog } from "@/components/dashboard/create-checkout-dialog";
 
 interface Checkout {
   id: string;
@@ -28,88 +15,50 @@ interface Checkout {
 }
 
 export default function CheckoutPage() {
-  const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
-  const [chain, setChain] = useState("");
-  const [checkouts, setCheckouts] = useState<Checkout[]>([
-    {
-      id: "1",
-      title: "Demo Checkout",
-      amount: "25.00",
-      chain: "ethereum",
-      url: "https://settle.capital/checkout/demo-1",
-    },
-  ]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [checkouts, setCheckouts] = useState<Checkout[]>([]);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleCreateCheckout = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    // Mock creation logic
-    setTimeout(() => {
-      const newCheckout: Checkout = {
-        id: Math.random().toString(36).substring(2, 10),
-        title,
-        amount,
-        chain: "all", // Indicate all chains supported
-        url: `https://settle.capital/${Math.random().toString(36).substring(2, 10)}`,
-      };
-      setCheckouts([newCheckout, ...checkouts]);
-      setTitle("");
-      setAmount("");
-      setIsSubmitting(false);
-    }, 800);
+  const fetchCheckouts = async () => {
+    try {
+      const response = await fetch('/api/checkouts');
+      if (response.ok) {
+        const data = await response.json();
+        setCheckouts(data.checkouts);
+      }
+    } catch (error) {
+      console.error('Failed to fetch checkouts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCheckouts();
+  }, []);
+
+  const handleDialogClose = (open: boolean) => {
+    setCreateDialogOpen(open);
+    if (!open) {
+      // Refetch checkouts when dialog closes to get newly created ones
+      fetchCheckouts();
+    }
   };
 
   return (
     <div className="p-6 space-y-8">
-      <h1 className="text-2xl font-bold mb-4">Create Checkout Page</h1>
-      <Card className="p-6 max-w-xl">
-        <form onSubmit={handleCreateCheckout} className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="e.g. T-shirt, Donation, etc."
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="amount">Amount (USDC)</Label>
-            <Input
-              id="amount"
-              type="number"
-              min="0"
-              step="0.01"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-              placeholder="0.00"
-              required
-            />
-          </div>
-          
-          <Button type="submit" className="w-full" disabled={isSubmitting || !title || !amount || !chain}>
-            {isSubmitting ? "Creating..." : "Create Checkout"}
-          </Button>
-        </form>
-        <div className="mt-6">
-          <Label>Supported Chains</Label>
-          <div className="flex flex-wrap gap-3 mt-2">
-            {CHAINS.map(chain => (
-              <div key={chain.value} className="flex items-center gap-1 bg-muted px-3 py-1 rounded-full text-sm">
-                <span>{chain.label}</span>
-                <Check className="w-4 h-4" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </Card>
-      <Separator />
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Checkout Pages</h1>
+        <Button onClick={() => setCreateDialogOpen(true)} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          Create Checkout
+        </Button>
+      </div>
       <div>
         <h2 className="text-lg font-semibold mb-4">Your Checkout Pages</h2>
-        {checkouts.length === 0 ? (
+        {loading ? (
+          <p className="text-muted-foreground">Loading checkouts...</p>
+        ) : checkouts.length === 0 ? (
           <p className="text-muted-foreground">No checkouts created yet.</p>
         ) : (
           <div className="space-y-4">
@@ -132,6 +81,11 @@ export default function CheckoutPage() {
           </div>
         )}
       </div>
+      
+      <CreateCheckoutDialog 
+        open={createDialogOpen} 
+        onOpenChange={handleDialogClose}
+      />
     </div>
   );
 } 

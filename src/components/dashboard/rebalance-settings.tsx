@@ -5,7 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
+import { useFeatureFlags } from "@/lib/feature-flags"
 
 interface Wallet {
   id: string
@@ -34,6 +36,7 @@ interface RebalanceSettingsProps {
 }
 
 export function RebalanceSettings({ wallets, currentSettings, onSave }: RebalanceSettingsProps) {
+  const featureFlags = useFeatureFlags()
   const [settings, setSettings] = useState(currentSettings || {
     treasuryWalletId: '',
     autoRebalance: false,
@@ -44,7 +47,12 @@ export function RebalanceSettings({ wallets, currentSettings, onSave }: Rebalanc
 
   const handleSave = async () => {
     try {
-      await onSave(settings)
+      const settingsToSave = {
+        ...settings,
+        // Ensure auto-rebalance is disabled if feature flag is off
+        autoRebalance: settings.autoRebalance && featureFlags.autoRebalancing
+      }
+      await onSave(settingsToSave)
       toast.success("Rebalance settings saved successfully")
     } catch (error) {
       toast.error("Failed to save rebalance settings")
@@ -78,14 +86,26 @@ export function RebalanceSettings({ wallets, currentSettings, onSave }: Rebalanc
 
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label>Auto-Rebalance</Label>
+            <div className="flex items-center gap-2">
+              <Label>Auto-Rebalance</Label>
+              {!featureFlags.autoRebalancing && (
+                <Badge variant="secondary" className="text-xs">
+                  Coming Soon
+                </Badge>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground">
               Automatically rebalance after every transaction
             </p>
           </div>
           <Switch
-            checked={settings.autoRebalance}
-            onCheckedChange={(checked) => setSettings({ ...settings, autoRebalance: checked })}
+            checked={settings.autoRebalance && featureFlags.autoRebalancing}
+            onCheckedChange={(checked) => {
+              if (featureFlags.autoRebalancing) {
+                setSettings({ ...settings, autoRebalance: checked })
+              }
+            }}
+            disabled={!featureFlags.autoRebalancing}
           />
         </div>
 
@@ -94,6 +114,7 @@ export function RebalanceSettings({ wallets, currentSettings, onSave }: Rebalanc
           <Select
             value={settings.rebalanceMode}
             onValueChange={(value: 'gas_free' | 'fast') => setSettings({ ...settings, rebalanceMode: value })}
+            disabled={!featureFlags.autoRebalancing}
           >
             <SelectTrigger>
               <SelectValue />
@@ -115,6 +136,7 @@ export function RebalanceSettings({ wallets, currentSettings, onSave }: Rebalanc
                 max={100}
                 value={settings.targetBalancePercentage}
                 onChange={(e) => setSettings({ ...settings, targetBalancePercentage: parseInt(e.target.value) })}
+                disabled={!featureFlags.autoRebalancing}
               />
               <span className="text-muted-foreground">%</span>
             </div>
@@ -131,6 +153,7 @@ export function RebalanceSettings({ wallets, currentSettings, onSave }: Rebalanc
                 min={0}
                 value={settings.minRebalanceAmount}
                 onChange={(e) => setSettings({ ...settings, minRebalanceAmount: parseInt(e.target.value) })}
+                disabled={!featureFlags.autoRebalancing}
               />
               <span className="text-muted-foreground">USD</span>
             </div>

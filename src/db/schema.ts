@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, boolean, integer, jsonb } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 export const user = pgTable("user", {
 					id: text('id').primaryKey(),
@@ -97,3 +98,47 @@ export const rebalanceTransaction = pgTable("rebalance_transaction", {
   createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
   updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
 });
+
+export const checkout = pgTable("checkout", {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  amount: text('amount').notNull(), // Store as string to preserve decimal precision
+  url: text('url').notNull().unique(),
+  slug: text('slug').notNull().unique(), // URL-friendly identifier
+  status: text('status').$default(() => 'active').notNull(), // 'active', 'disabled', 'deleted'
+  supportedChains: jsonb('supported_chains').$default(() => ['ethereum', 'polygon', 'arbitrum', 'optimism', 'base', 'avalanche', 'solana']).notNull(), // Array of supported blockchain identifiers
+  recipientWallets: jsonb('recipient_wallets').notNull(), // JSON object mapping chain -> wallet address
+  createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const checkoutTransaction = pgTable("checkout_transaction", {
+  id: text('id').primaryKey(),
+  checkoutId: text('checkout_id').notNull().references(() => checkout.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  amount: text('amount').notNull(), // Store as string to preserve decimal precision
+  chain: text('chain').notNull(), // The blockchain where payment was made
+  recipientAddress: text('recipient_address').notNull(), // Address that received the payment
+  payerAddress: text('payer_address'), // Address that made the payment (optional, may be unknown)
+  transactionHash: text('transaction_hash').notNull(), // On-chain transaction hash
+  status: text('status').$default(() => 'completed').notNull(), // 'completed', 'pending', 'failed'
+  createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+// Relations
+export const checkoutRelations = relations(checkout, ({ many }) => ({
+  transactions: many(checkoutTransaction),
+}));
+
+export const checkoutTransactionRelations = relations(checkoutTransaction, ({ one }) => ({
+  checkout: one(checkout, {
+    fields: [checkoutTransaction.checkoutId],
+    references: [checkout.id],
+  }),
+  user: one(user, {
+    fields: [checkoutTransaction.userId],
+    references: [user.id],
+  }),
+}));

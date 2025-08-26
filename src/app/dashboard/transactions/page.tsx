@@ -7,18 +7,25 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { blockchainNames, Blockchain } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Info, ExternalLink } from "lucide-react"
 import Link from "next/link"
 
-interface Transaction {
+interface BaseTransaction {
   id: string
   userId: string
-  sourceWalletId: string
-  treasuryWalletId: string
   amount: number
   sourceChain: Blockchain
   destinationChain: Blockchain
   status: 'PENDING' | 'APPROVING' | 'BURNING' | 'ATTESTING' | 'MINTING' | 'COMPLETED' | 'FAILED'
+  createdAt: string
+  updatedAt: string
+}
+
+interface RebalanceTransaction extends BaseTransaction {
+  type: 'rebalance'
+  sourceWalletId: string
+  treasuryWalletId: string
   error?: string
   approveTransactionId?: string
   burnTransactionId?: string
@@ -26,9 +33,18 @@ interface Transaction {
   messageBytes?: string
   messageHash?: string
   attestation?: string
-  createdAt: string
-  updatedAt: string
 }
+
+interface CheckoutTransaction extends BaseTransaction {
+  type: 'checkout'
+  chain: string
+  transactionHash: string
+  checkoutTitle: string
+  recipientAddress: string
+  payerAddress?: string
+}
+
+type Transaction = RebalanceTransaction | CheckoutTransaction
 
 function formatAmount(amount: number): string {
   return (amount / 1_000_000).toFixed(2)
@@ -71,10 +87,25 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-function TransactionLink({ txId }: { txId: string }) {
-  // This is a placeholder - you'll need to implement the actual chain explorer URL logic
+function getExplorerUrl(chain: string, txHash: string): string {
+  const explorers: Record<string, string> = {
+    ethereum: 'https://sepolia.etherscan.io',
+    polygon: 'https://amoy.polygonscan.com',
+    arbitrum: 'https://sepolia.arbiscan.io',
+    optimism: 'https://sepolia-optimism.etherscan.io',
+    base: 'https://sepolia.basescan.org',
+    avalanche: 'https://testnet.snowtrace.io',
+  }
+  
+  const baseUrl = explorers[chain] || 'https://etherscan.io'
+  return `${baseUrl}/tx/${txHash}`
+}
+
+function TransactionLink({ txId, chain }: { txId: string; chain?: string }) {
+  const explorerUrl = chain ? getExplorerUrl(chain, txId) : `https://explorer.circle.com/tx/${txId}`
+  
   return (
-    <Link href={`https://explorer.circle.com/tx/${txId}`} target="_blank" className="flex items-center hover:text-primary">
+    <Link href={explorerUrl} target="_blank" className="flex items-center hover:text-primary">
       <span className="truncate max-w-[100px]">{txId}</span>
       <ExternalLink className="h-3 w-3 ml-1" />
     </Link>
@@ -89,94 +120,110 @@ function LoadingSkeleton() {
   )
 }
 
-export default function TransactionsPage() {
-  const { data: transactions, isLoading } = useQuery<Transaction[]>({
-    queryKey: ['transactions'],
-    queryFn: async () => {
-      const response = await fetch('/api/wallets/transactions')
-      if (!response.ok) throw new Error('Failed to fetch transactions')
-      return response.json()
-    }
-  })
-
-  if (isLoading) {
-    // Skeleton table with headers and rows to mimic real data
-    return (
-      <Card className="p-6">
-        <div className="rounded-md border overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>
-                  <Skeleton className="h-4 w-16" />
-                </TableHead>
-                <TableHead>
-                  <Skeleton className="h-4 w-20" />
-                </TableHead>
-                <TableHead>
-                  <Skeleton className="h-4 w-24" />
-                </TableHead>
-                <TableHead>
-                  <Skeleton className="h-4 w-24" />
-                </TableHead>
-                <TableHead>
-                  <Skeleton className="h-4 w-28" />
-                </TableHead>
-                <TableHead>
-                  <Skeleton className="h-4 w-32" />
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...Array(5)].map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <Skeleton className="h-6 w-20 rounded-full" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-16" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <Skeleton className="h-3 w-32" />
-                      <Skeleton className="h-3 w-28" />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
-    )
-  }
-
+function CheckoutTransactionsTable({ transactions }: { transactions: CheckoutTransaction[] }) {
   return (
-    <Card className="p-6">
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Chain</TableHead>
+            <TableHead>Checkout</TableHead>
+            <TableHead>Payer</TableHead>
+            <TableHead>Created At</TableHead>
+            <TableHead>Transaction</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions.length === 0 ? (
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>From Chain</TableHead>
-              <TableHead>To Chain</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead>Transaction IDs</TableHead>
+              <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                No checkout transactions found
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transactions?.map((tx) => (
+          ) : (
+            transactions.map((tx) => (
+              <TableRow key={tx.id}>
+                <TableCell>
+                  {tx.id.slice(0, 8)}...{tx.id.slice(-6)}
+                </TableCell>
+                <TableCell>
+                  <StatusBadge status={tx.status} />
+                </TableCell>
+                <TableCell>{formatAmount(tx.amount)} USDC</TableCell>
+                <TableCell>{tx.sourceChain}</TableCell>
+                <TableCell>
+                  <div className="font-medium">{tx.checkoutTitle}</div>
+                </TableCell>
+                <TableCell>
+                  {tx.payerAddress ? (
+                    <div className="text-xs text-muted-foreground">
+                      {tx.payerAddress.slice(0, 6)}...{tx.payerAddress.slice(-4)}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Unknown</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <span>
+                    <span className="text-xs text-muted-foreground">{formatDate(tx.createdAt)}</span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      (
+                        {(() => {
+                          const now = new Date();
+                          const created = new Date(tx.createdAt);
+                          const diffMs = now.getTime() - created.getTime();
+                          const diffSec = Math.floor(diffMs / 1000);
+                          const diffMin = Math.floor(diffSec / 60);
+                          const diffHour = Math.floor(diffMin / 60);
+                          const diffDay = Math.floor(diffHour / 24);
+
+                          if (diffDay > 0) return `${diffDay} day${diffDay > 1 ? "s" : ""} ago`;
+                          if (diffHour > 0) return `${diffHour} hour${diffHour > 1 ? "s" : ""} ago`;
+                          if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? "s" : ""} ago`;
+                          return "just now";
+                        })()}
+                      )
+                    </span>
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <TransactionLink txId={tx.transactionHash} chain={tx.sourceChain} />
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+
+function RebalanceTransactionsTable({ transactions }: { transactions: RebalanceTransaction[] }) {
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Route</TableHead>
+            <TableHead>Created At</TableHead>
+            <TableHead>Transaction IDs</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                No rebalance transactions found
+              </TableCell>
+            </TableRow>
+          ) : (
+            transactions.map((tx) => (
               <TableRow key={tx.id}>
                 <TableCell>
                   {tx.id.slice(0, 8)}...{tx.id.slice(-6)}
@@ -199,8 +246,9 @@ export default function TransactionsPage() {
                   </div>
                 </TableCell>
                 <TableCell>{formatAmount(tx.amount)} USDC</TableCell>
-                <TableCell>{blockchainNames[tx.sourceChain]}</TableCell>
-                <TableCell>{blockchainNames[tx.destinationChain]}</TableCell>
+                <TableCell>
+                  {blockchainNames[tx.sourceChain]} → {blockchainNames[tx.destinationChain]}
+                </TableCell>
                 <TableCell>
                   <span>
                     <span className="text-xs text-muted-foreground">{formatDate(tx.createdAt)}</span>
@@ -256,10 +304,74 @@ export default function TransactionsPage() {
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </Card>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+
+export default function TransactionsPage() {
+  const { data: transactions, isLoading } = useQuery<Transaction[]>({
+    queryKey: ['transactions'],
+    queryFn: async () => {
+      const response = await fetch('/api/wallets/transactions')
+      if (!response.ok) throw new Error('Failed to fetch transactions')
+      return response.json()
+    }
+  })
+
+  if (isLoading) {
+    return <LoadingSkeleton />
+  }
+
+  // Filter transactions by type
+  const checkoutTransactions = transactions?.filter((tx): tx is CheckoutTransaction => tx.type === 'checkout') || []
+  const rebalanceTransactions = transactions?.filter((tx): tx is RebalanceTransaction => tx.type === 'rebalance') || []
+  console.log(checkoutTransactions)
+  return (
+    <div className="space-y-6">
+      <Tabs defaultValue="checkout" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="checkout" className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              Deposits
+            </Badge>
+            <span>({checkoutTransactions.length})</span>
+          </TabsTrigger>
+          <TabsTrigger value="rebalance" className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              Rebalancing
+            </Badge>
+            <span>({rebalanceTransactions.length})</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="checkout" className="mt-6">
+          <Card className="p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold">Checkout Deposits</h3>
+              <p className="text-sm text-muted-foreground">
+                Payments received through your checkout links
+              </p>
+            </div>
+            <CheckoutTransactionsTable transactions={checkoutTransactions} />
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="rebalance" className="mt-6">
+          <Card className="p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold">Wallet Rebalancing</h3>
+              <p className="text-sm text-muted-foreground">
+                Cross-chain USDC transfers between your wallets
+              </p>
+            </div>
+            <RebalanceTransactionsTable transactions={rebalanceTransactions} />
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 } 

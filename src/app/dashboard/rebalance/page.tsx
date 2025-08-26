@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -38,18 +38,23 @@ function ManualRebalance({
   wallets, 
   treasuryWallet, 
   selectedWallet, 
-  onWalletSelect 
+  onWalletSelect,
+  selectedTreasuryWallet,
+  onTreasuryWalletSelect
 }: { 
   wallets: Wallet[]
   treasuryWallet: Wallet | null
   selectedWallet: string
   onWalletSelect: (walletId: string) => void
+  selectedTreasuryWallet: string
+  onTreasuryWalletSelect: (walletId: string) => void
 }) {
   const [amount, setAmount] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const queryClient = useQueryClient()
 
-  const sourceWallets = wallets.filter(w => !w.isTreasuryWallet)
+  const sourceWallets = wallets.filter(w => w.id !== selectedTreasuryWallet)
+  const availableTreasuryWallets = wallets
 
   const handleSubmit = async () => {
     try {
@@ -63,6 +68,7 @@ function ManualRebalance({
         },
         body: JSON.stringify({
           sourceWalletId: selectedWallet,
+          treasuryWalletId: selectedTreasuryWallet,
           amount: amountInSmallestUnit,
         }),
       })
@@ -84,14 +90,6 @@ function ManualRebalance({
     }
   }
 
-  if (!treasuryWallet) {
-    return (
-      <Card className="p-6">
-        <p className="text-center text-muted-foreground">Please select a treasury wallet in the settings above</p>
-      </Card>
-    )
-  }
-
   return (
     <Card className="p-6">
       <h2 className="text-lg font-semibold mb-4">Manual Rebalance</h2>
@@ -100,10 +98,26 @@ function ManualRebalance({
           <Label>Source Wallet</Label>
           <Select value={selectedWallet} onValueChange={onWalletSelect}>
             <SelectTrigger>
-              <SelectValue placeholder="Select a wallet" />
+              <SelectValue placeholder="Select source wallet" />
             </SelectTrigger>
             <SelectContent>
               {sourceWallets.map((wallet) => (
+                <SelectItem key={wallet.id} value={wallet.id}>
+                  {wallet.name} ({blockchainNames[wallet.blockchain]})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Treasury Wallet (Destination)</Label>
+          <Select value={selectedTreasuryWallet} onValueChange={onTreasuryWalletSelect}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select treasury wallet" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableTreasuryWallets.map((wallet) => (
                 <SelectItem key={wallet.id} value={wallet.id}>
                   {wallet.name} ({blockchainNames[wallet.blockchain]})
                 </SelectItem>
@@ -141,7 +155,7 @@ function ManualRebalance({
         <Button
           className="w-full"
           onClick={handleSubmit}
-          disabled={!selectedWallet || !amount || isSubmitting}
+          disabled={!selectedWallet || !selectedTreasuryWallet || !amount || isSubmitting || selectedWallet === selectedTreasuryWallet}
         >
           {isSubmitting ? "Starting Rebalance..." : "Start Rebalance"}
         </Button>
@@ -153,6 +167,15 @@ function ManualRebalance({
 function LoadingSkeleton() {
   return (
     <div className="grid gap-6">
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card className="p-6">
+          <Skeleton className="h-[200px]" /> {/* Manual rebalance skeleton */}
+        </Card>
+        <Card className="p-6">
+          <Skeleton className="h-[200px]" /> {/* Flow skeleton */}
+        </Card>
+      </div>
+
       <Card className="p-6 space-y-6">
         <div className="space-y-2">
           <Skeleton className="h-5 w-24" /> {/* Label */}
@@ -192,15 +215,6 @@ function LoadingSkeleton() {
 
         <Skeleton className="h-10 w-full" /> {/* Button */}
       </Card>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <Skeleton className="h-[200px]" /> {/* Manual rebalance skeleton */}
-        </Card>
-        <Card className="p-6">
-          <Skeleton className="h-[200px]" /> {/* Flow skeleton */}
-        </Card>
-      </div>
     </div>
   )
 }
@@ -208,6 +222,7 @@ function LoadingSkeleton() {
 export default function RebalancePage() {
   const queryClient = useQueryClient()
   const [selectedWallet, setSelectedWallet] = useState("")
+  const [selectedTreasuryWallet, setSelectedTreasuryWallet] = useState("")
 
   const { data: wallets, isLoading: walletsLoading } = useQuery({
     queryKey: ["wallets"],
@@ -233,6 +248,13 @@ export default function RebalancePage() {
   })) || []
 
   const treasuryWallet = walletsWithTreasuryFlag.find((w: Wallet) => settings?.treasuryWalletId === w.id) || null
+
+  // Initialize treasury wallet selection from settings
+  useEffect(() => {
+    if (settings?.treasuryWalletId && !selectedTreasuryWallet) {
+      setSelectedTreasuryWallet(settings.treasuryWalletId)
+    }
+  }, [settings?.treasuryWalletId, selectedTreasuryWallet])
 
   const handleSaveSettings = async (newSettings: RebalanceSettingsData) => {
     try {
@@ -271,17 +293,14 @@ export default function RebalancePage() {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Rebalance Settings</h1>
       <div className="grid gap-6">
-        <RebalanceSettings
-          wallets={walletsWithTreasuryFlag}
-          currentSettings={settings || undefined}
-          onSave={handleSaveSettings}
-        />
         <div className="grid md:grid-cols-2 gap-6">
           <ManualRebalance 
             wallets={walletsWithTreasuryFlag} 
             treasuryWallet={treasuryWallet}
             selectedWallet={selectedWallet}
             onWalletSelect={setSelectedWallet}
+            selectedTreasuryWallet={selectedTreasuryWallet}
+            onTreasuryWalletSelect={setSelectedTreasuryWallet}
           />
           <Card className="p-6">
             <h2 className="text-lg font-semibold mb-4">Wallet Flow</h2>
@@ -291,6 +310,11 @@ export default function RebalancePage() {
             />
           </Card>
         </div>
+        <RebalanceSettings
+          wallets={walletsWithTreasuryFlag}
+          currentSettings={settings || undefined}
+          onSave={handleSaveSettings}
+        />
       </div>
     </div>
   )
