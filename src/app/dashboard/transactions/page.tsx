@@ -8,8 +8,10 @@ import { blockchainNames, Blockchain } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Info, ExternalLink } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
 
 interface BaseTransaction {
   id: string
@@ -35,6 +37,21 @@ interface RebalanceTransaction extends BaseTransaction {
   attestation?: string
 }
 
+interface UserRebalanceTransaction extends BaseTransaction {
+  type: 'user-rebalance'
+  sourceUserWalletId: string
+  destinationUserWalletId: string
+  sourceWalletName?: string
+  sourceWalletAddress?: string
+  error?: string
+  approveTransactionId?: string
+  burnTransactionId?: string
+  mintTransactionId?: string
+  messageBytes?: string
+  messageHash?: string
+  attestation?: string
+}
+
 interface CheckoutTransaction extends BaseTransaction {
   type: 'checkout'
   chain: string
@@ -44,10 +61,13 @@ interface CheckoutTransaction extends BaseTransaction {
   payerAddress?: string
 }
 
-type Transaction = RebalanceTransaction | CheckoutTransaction
+type Transaction = RebalanceTransaction | UserRebalanceTransaction | CheckoutTransaction
 
 function formatAmount(amount: number): string {
-  return (amount / 1_000_000).toFixed(2)
+  const formatted = amount / 1_000_000;
+  if (formatted === 0) return "0";
+  if (formatted < 0.01 && formatted > 0) return "<0.01";
+  return formatted.toFixed(2);
 }
 
 function formatDate(dateStr: string): string {
@@ -219,7 +239,7 @@ function RebalanceTransactionsTable({ transactions }: { transactions: RebalanceT
           {transactions.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                No rebalance transactions found
+                No Circle wallet rebalance transactions found
               </TableCell>
             </TableRow>
           ) : (
@@ -312,7 +332,122 @@ function RebalanceTransactionsTable({ transactions }: { transactions: RebalanceT
   )
 }
 
+function UserRebalanceTransactionsTable({ transactions }: { transactions: UserRebalanceTransaction[] }) {
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Route</TableHead>
+            <TableHead>Source Wallet</TableHead>
+            <TableHead>Created At</TableHead>
+            <TableHead>Transaction IDs</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                No user wallet rebalance transactions found
+              </TableCell>
+            </TableRow>
+          ) : (
+            transactions.map((tx) => (
+              <TableRow key={tx.id}>
+                <TableCell>
+                  {tx.id.slice(0, 8)}...{tx.id.slice(-6)}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={tx.status} />
+                    {tx.error && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Info className="h-4 w-4 text-destructive" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="max-w-xs break-words">{tx.error}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>{formatAmount(tx.amount)} USDC</TableCell>
+                <TableCell>
+                  {blockchainNames[tx.sourceChain]} → {blockchainNames[tx.destinationChain]}
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <div className="font-medium text-sm">{tx.sourceWalletName || 'Unknown'}</div>
+                    {tx.sourceWalletAddress && (
+                      <div className="text-xs text-muted-foreground">
+                        {tx.sourceWalletAddress.slice(0, 6)}...{tx.sourceWalletAddress.slice(-4)}
+                      </div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <span>
+                    <span className="text-xs text-muted-foreground">{formatDate(tx.createdAt)}</span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      (
+                        {(() => {
+                          const now = new Date();
+                          const created = new Date(tx.createdAt);
+                          const diffMs = now.getTime() - created.getTime();
+                          const diffSec = Math.floor(diffMs / 1000);
+                          const diffMin = Math.floor(diffSec / 60);
+                          const diffHour = Math.floor(diffMin / 60);
+                          const diffDay = Math.floor(diffHour / 24);
+
+                          if (diffDay > 0) return `${diffDay} day${diffDay > 1 ? "s" : ""} ago`;
+                          if (diffHour > 0) return `${diffHour} hour${diffHour > 1 ? "s" : ""} ago`;
+                          if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? "s" : ""} ago`;
+                          return "just now";
+                        })()}
+                      )
+                    </span>
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+                    {tx.approveTransactionId && (
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">Approve:</span>
+                        <TransactionLink txId={tx.approveTransactionId} chain={tx.sourceChain} />
+                      </div>
+                    )}
+                    {tx.burnTransactionId && (
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">Burn:</span>
+                        <TransactionLink txId={tx.burnTransactionId} chain={tx.sourceChain} />
+                      </div>
+                    )}
+                    {tx.mintTransactionId && (
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium">Mint:</span>
+                        <TransactionLink txId={tx.mintTransactionId} chain={tx.destinationChain} />
+                      </div>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}
+
 export default function TransactionsPage() {
+  const [selectedTransactionType, setSelectedTransactionType] = useState<string>('all')
+  
   const { data: transactions, isLoading } = useQuery<Transaction[]>({
     queryKey: ['transactions'],
     queryFn: async () => {
@@ -329,22 +464,26 @@ export default function TransactionsPage() {
   // Filter transactions by type
   const checkoutTransactions = transactions?.filter((tx): tx is CheckoutTransaction => tx.type === 'checkout') || []
   const rebalanceTransactions = transactions?.filter((tx): tx is RebalanceTransaction => tx.type === 'rebalance') || []
-  console.log(checkoutTransactions)
+  const userRebalanceTransactions = transactions?.filter((tx): tx is UserRebalanceTransaction => tx.type === 'user-rebalance') || []
+  
+  // Combined rebalance transactions for the tab
+  const allRebalanceTransactions = [...rebalanceTransactions, ...userRebalanceTransactions]
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="checkout" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="checkout" className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            <Badge variant="outline" className="bg-secondary text-secondary-foreground">
               Deposits
             </Badge>
             <span>({checkoutTransactions.length})</span>
           </TabsTrigger>
           <TabsTrigger value="rebalance" className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            <Badge variant="outline" className="bg-primary text-primary-foreground">
               Rebalancing
             </Badge>
-            <span>({rebalanceTransactions.length})</span>
+            <span>({allRebalanceTransactions.length})</span>
           </TabsTrigger>
         </TabsList>
         
@@ -362,13 +501,57 @@ export default function TransactionsPage() {
         
         <TabsContent value="rebalance" className="mt-6">
           <Card className="p-6">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold">Wallet Rebalancing</h3>
-              <p className="text-sm text-muted-foreground">
-                Cross-chain USDC transfers between your wallets
-              </p>
+            <div className="mb-4 flex justify-between items-start">
+              <div>
+                <h3 className="text-lg font-semibold">Wallet Rebalancing</h3>
+                <p className="text-sm text-muted-foreground">
+                  Cross-chain USDC transfers between your wallets
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Filter:</span>
+                <Select value={selectedTransactionType} onValueChange={setSelectedTransactionType}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select transaction type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Transactions ({allRebalanceTransactions.length})</SelectItem>
+                    <SelectItem value="user-rebalance">User Wallets ({userRebalanceTransactions.length})</SelectItem>
+                    <SelectItem value="rebalance">Circle Wallets ({rebalanceTransactions.length})</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <RebalanceTransactionsTable transactions={rebalanceTransactions} />
+            
+            {selectedTransactionType === 'all' && (
+              <div className="space-y-6">
+                {userRebalanceTransactions.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-medium mb-3 text-primary">User Wallet Transactions</h4>
+                    <UserRebalanceTransactionsTable transactions={userRebalanceTransactions} />
+                  </div>
+                )}
+                {rebalanceTransactions.length > 0 && (
+                  <div>
+                    <h4 className="text-md font-medium mb-3 text-accent-foreground">Circle Wallet Transactions</h4>
+                    <RebalanceTransactionsTable transactions={rebalanceTransactions} />
+                  </div>
+                )}
+                {allRebalanceTransactions.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    No rebalance transactions found
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {selectedTransactionType === 'user-rebalance' && (
+              <UserRebalanceTransactionsTable transactions={userRebalanceTransactions} />
+            )}
+            
+            {selectedTransactionType === 'rebalance' && (
+              <RebalanceTransactionsTable transactions={rebalanceTransactions} />
+            )}
           </Card>
         </TabsContent>
       </Tabs>

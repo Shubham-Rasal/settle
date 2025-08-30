@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { CreateWalletDialog } from "@/components/dashboard/create-wallet-dialog"
 import { WalletCard } from "@/components/dashboard/wallet-card"
+import { MetaMaskConnect } from "@/components/dashboard/metamask-connect"
 import { Blockchain, blockchainNames } from "@/lib/types"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
@@ -16,6 +17,7 @@ interface Wallet {
   blockchain: Blockchain;
   address: string;
   controlType: "user" | "developer";
+  connectionType?: "generated" | "metamask";
 }
 
 export default function WalletsPage() {
@@ -130,24 +132,34 @@ export default function WalletsPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="user" className="space-y-4">
+        <TabsContent value="user" className="space-y-6">
+          {/* MetaMask Connection Section */}
+          <div className="max-w-md">
+            <MetaMaskConnect onWalletAdded={fetchWallets} />
+          </div>
+
+          {/* User Wallets Grid */}
           {userWallets.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <p>No user-controlled wallets yet.</p>
-              <p className="text-sm">Create one to get started!</p>
+              <p className="text-sm">Connect your MetaMask wallet or create one to get started!</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {userWallets.map((wallet) => (
-                <WalletCard
-                  key={wallet.id}
-                  id={wallet.id}
-                  name={wallet.name}
-                  chain={wallet.blockchain}
-                  address={wallet.address}
-                  onRefresh={fetchWallets}
-                />
-              ))}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Your Connected Wallets</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {userWallets.map((wallet) => (
+                  <WalletCard
+                    key={wallet.id}
+                    id={wallet.id}
+                    name={wallet.name}
+                    chain={wallet.blockchain}
+                    address={wallet.address}
+                    onRefresh={fetchWallets}
+                    connectionType={wallet.connectionType}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </TabsContent>

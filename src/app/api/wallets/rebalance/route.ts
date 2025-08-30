@@ -53,7 +53,7 @@ export async function POST(req: Request) {
           eq(wallet.userId, session.user.id)
         ),
       }),
-      db.query.rebalanceSettings.findFirst({
+      db.query.rebalanceSettings.findFirst({  
         where: eq(rebalanceSettings.userId, session.user.id),
       }),
     ]);
@@ -120,7 +120,7 @@ export async function POST(req: Request) {
         treasuryWalletId: treasuryWallet.treasuryWalletId,
         amount: amount,
         sourceChain: sourceWallet.blockchain,
-        destinationChain: treasuryWallet.rebalanceMode,
+        destinationChain: treasuryWalletDetails.blockchain, 
         status: "APPROVING",
         approveTransactionId: approveResponse.data.id,
         createdAt: new Date(),

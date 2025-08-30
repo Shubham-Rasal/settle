@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { db } from "@/db"
 import { desc, eq } from "drizzle-orm"
-import { rebalanceTransaction, checkoutTransaction, checkout } from "@/db/schema"
+import { rebalanceTransaction, userRebalanceTransaction, checkoutTransaction, checkout, userWallet } from "@/db/schema"
 import { getSession } from "@/lib/auth/server"
 
 export async function GET() {
@@ -11,11 +11,39 @@ export async function GET() {
       return new NextResponse("Unauthorized", { status: 401 })
     }
 
-    // Fetch rebalancing transactions
+    // Fetch traditional rebalancing transactions (Circle wallets)
     const rebalanceTransactions = await db.query.rebalanceTransaction.findMany({
       where: eq(rebalanceTransaction.userId, session.user.id),
       orderBy: [desc(rebalanceTransaction.createdAt)],
     })
+
+    // Fetch user rebalancing transactions (user wallets) with wallet details
+    const userRebalanceTransactions = await db
+      .select({
+        id: userRebalanceTransaction.id,
+        userId: userRebalanceTransaction.userId,
+        sourceUserWalletId: userRebalanceTransaction.sourceUserWalletId,
+        destinationUserWalletId: userRebalanceTransaction.destinationUserWalletId,
+        amount: userRebalanceTransaction.amount,
+        sourceChain: userRebalanceTransaction.sourceChain,
+        destinationChain: userRebalanceTransaction.destinationChain,
+        status: userRebalanceTransaction.status,
+        error: userRebalanceTransaction.error,
+        approveTransactionId: userRebalanceTransaction.approveTransactionId,
+        burnTransactionId: userRebalanceTransaction.burnTransactionId,
+        mintTransactionId: userRebalanceTransaction.mintTransactionId,
+        messageBytes: userRebalanceTransaction.messageBytes,
+        messageHash: userRebalanceTransaction.messageHash,
+        attestation: userRebalanceTransaction.attestation,
+        createdAt: userRebalanceTransaction.createdAt,
+        updatedAt: userRebalanceTransaction.updatedAt,
+        sourceWalletName: userWallet.name,
+        sourceWalletAddress: userWallet.address,
+      })
+      .from(userRebalanceTransaction)
+      .leftJoin(userWallet, eq(userRebalanceTransaction.sourceUserWalletId, userWallet.id))
+      .where(eq(userRebalanceTransaction.userId, session.user.id))
+      .orderBy(desc(userRebalanceTransaction.createdAt))
 
     // Fetch checkout transactions with checkout details
     const checkoutTransactions = await db
@@ -38,10 +66,16 @@ export async function GET() {
       .where(eq(checkoutTransaction.userId, session.user.id))
       .orderBy(desc(checkoutTransaction.createdAt))
 
-    // Transform rebalancing transactions to include type
+    // Transform traditional rebalancing transactions to include type
     const transformedRebalanceTransactions = rebalanceTransactions.map(tx => ({
       ...tx,
       type: 'rebalance' as const,
+    }))
+
+    // Transform user rebalancing transactions to include type
+    const transformedUserRebalanceTransactions = userRebalanceTransactions.map(tx => ({
+      ...tx,
+      type: 'user-rebalance' as const,
     }))
 
     // Transform checkout transactions to match the expected format
@@ -64,6 +98,7 @@ export async function GET() {
     // Combine and sort all transactions by creation date
     const allTransactions = [
       ...transformedRebalanceTransactions,
+      ...transformedUserRebalanceTransactions,
       ...transformedCheckoutTransactions,
     ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 

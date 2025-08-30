@@ -21,6 +21,8 @@ const CHAINS = Object.entries(Blockchain).map(([key, value]) => {
     [Blockchain.BASE_SEPOLIA]: "base",
     [Blockchain.AVAX_FUJI]: "avalanche",
     [Blockchain.SOL_DEVNET]: "solana",
+    [Blockchain.SONIC_BLAZE]: "sonic",
+    [Blockchain.LINEA_SEPOLIA]: "linea",
   };
   
   return {

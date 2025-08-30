@@ -6,6 +6,8 @@ export enum Blockchain {
   AVAX_FUJI = "AVAX-FUJI",
   OP_SEPOLIA = "OP-SEPOLIA",
   SOL_DEVNET = "SOL-DEVNET",
+  SONIC_BLAZE = "SONIC-BLAZE",
+  LINEA_SEPOLIA = "LINEA-SEPOLIA",
 }
 
 export const blockchainNames: Record<Blockchain, string> = {
@@ -16,6 +18,8 @@ export const blockchainNames: Record<Blockchain, string> = {
   [Blockchain.AVAX_FUJI]: "Avalanche Fuji",
   [Blockchain.OP_SEPOLIA]: "Optimism Sepolia",
   [Blockchain.SOL_DEVNET]: "Solana Devnet",
+  [Blockchain.SONIC_BLAZE]: "Sonic Blaze",
+  [Blockchain.LINEA_SEPOLIA]: "Linea Sepolia",
 };
 
 export const blockchainLogos: Record<Blockchain, string> = {
@@ -26,6 +30,8 @@ export const blockchainLogos: Record<Blockchain, string> = {
   [Blockchain.AVAX_FUJI]: "/chains/avalanche.svg",
   [Blockchain.OP_SEPOLIA]: "/chains/optimism.svg",
   [Blockchain.SOL_DEVNET]: "/chains/solana.svg",
+  [Blockchain.SONIC_BLAZE]: "/chains/sonic.svg",
+  [Blockchain.LINEA_SEPOLIA]: "/chains/linea.svg",
 };
 
 export interface WalletSet {
