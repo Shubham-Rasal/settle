@@ -59,6 +59,19 @@ export const wallet = pgTable("wallet", {
   updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
 });
 
+export const userWallet = pgTable("user_wallet", {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  address: text('address').notNull(),
+  blockchain: text('blockchain').notNull(), // e.g., 'ETH-SEPOLIA', 'ARB-SEPOLIA', etc.
+  connectionType: text('connection_type').notNull(), // 'metamask', 'walletconnect', etc.
+  chainId: text('chain_id'), // MetaMask chain ID (e.g., '0xaa36a7')
+  isActive: boolean('is_active').$default(() => true).notNull(),
+  createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
 export const walletSet = pgTable("wallet_set", {
   id: text('id').primaryKey(), // Circle wallet set ID
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
@@ -127,7 +140,54 @@ export const checkoutTransaction = pgTable("checkout_transaction", {
   updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
 });
 
+export const userRebalanceTransaction = pgTable("user_rebalance_transaction", {
+  id: text('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  sourceUserWalletId: text('source_user_wallet_id').notNull().references(() => userWallet.id, { onDelete: 'cascade' }),
+  destinationUserWalletId: text('destination_user_wallet_id').notNull().references(() => userWallet.id, { onDelete: 'cascade' }),
+  amount: integer('amount').notNull(), // Amount in smallest unit (e.g., 1000000 for 1 USDC)
+  sourceChain: text('source_chain').notNull(),
+  destinationChain: text('destination_chain').notNull(),
+  status: text('status').notNull(), // 'pending', 'approving', 'burning', 'attesting', 'minting', 'completed', 'failed'
+  error: text('error'),
+  approveTransactionId: text('approve_transaction_id'),
+  burnTransactionId: text('burn_transaction_id'),
+  mintTransactionId: text('mint_transaction_id'),
+  messageBytes: text('message_bytes'),
+  messageHash: text('message_hash'),
+  attestation: text('attestation'),
+  createdAt: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updatedAt: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
 // Relations
+export const userRelations = relations(user, ({ many }) => ({
+  wallets: many(wallet),
+  userWallets: many(userWallet),
+  walletSets: many(walletSet),
+}));
+
+export const walletRelations = relations(wallet, ({ one }) => ({
+  user: one(user, {
+    fields: [wallet.userId],
+    references: [user.id],
+  }),
+}));
+
+export const userWalletRelations = relations(userWallet, ({ one }) => ({
+  user: one(user, {
+    fields: [userWallet.userId],
+    references: [user.id],
+  }),
+}));
+
+export const walletSetRelations = relations(walletSet, ({ one }) => ({
+  user: one(user, {
+    fields: [walletSet.userId],
+    references: [user.id],
+  }),
+}));
+
 export const checkoutRelations = relations(checkout, ({ many }) => ({
   transactions: many(checkoutTransaction),
 }));
@@ -140,5 +200,20 @@ export const checkoutTransactionRelations = relations(checkoutTransaction, ({ on
   user: one(user, {
     fields: [checkoutTransaction.userId],
     references: [user.id],
+  }),
+}));
+
+export const userRebalanceTransactionRelations = relations(userRebalanceTransaction, ({ one }) => ({
+  user: one(user, {
+    fields: [userRebalanceTransaction.userId],
+    references: [user.id],
+  }),
+  sourceUserWallet: one(userWallet, {
+    fields: [userRebalanceTransaction.sourceUserWalletId],
+    references: [userWallet.id],
+  }),
+  destinationUserWallet: one(userWallet, {
+    fields: [userRebalanceTransaction.destinationUserWalletId],
+    references: [userWallet.id],
   }),
 }));
