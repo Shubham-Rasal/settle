@@ -14,7 +14,12 @@ import Link from "next/link";
 // Extend Window interface to include ethereum
 declare global {
   interface Window {
-    ethereum?: any;
+    ethereum?: {
+      isMetaMask?: boolean;
+      request: (args: { method: string; params?: any[] }) => Promise<any>;
+      on: (event: string, callback: (...args: any[]) => void) => void;
+      removeListener: (event: string, callback: (...args: any[]) => void) => void;
+    };
   }
 }
 
@@ -97,6 +102,11 @@ export default function PublicCheckoutPage() {
 
   const switchNetwork = async (chainId: string) => {
     try {
+      if (!window.ethereum) {
+        toast.error('Please install MetaMask to switch networks');
+        return false;
+      }
+      
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId }],
