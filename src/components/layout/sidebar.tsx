@@ -16,6 +16,7 @@ import {
     RefreshCw,
     ChevronLeft,
     ChevronRight,
+    Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -36,6 +37,11 @@ const routes = [
         label: "Rebalance",
         icon: RefreshCw,
         href: "/dashboard/rebalance",
+    },
+    {
+        label: "USDCKit Test",
+        icon: Sparkles,
+        href: "/dashboard/bridgekit-test",
     },
     {
         label: "Transactions",

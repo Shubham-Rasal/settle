@@ -11,7 +11,10 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@circle-fin/adapter-viem-v2": "0.0.2-alpha.6",
+    "@circle-fin/bridging-kit": "0.0.2-alpha.6",
     "@circle-fin/developer-controlled-wallets": "^8.4.0",
+    "@circle-fin/usdckit": "^0.21.0",
     "@neondatabase/serverless": "^1.0.1",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.14",
