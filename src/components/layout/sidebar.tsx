@@ -39,7 +39,7 @@ const routes = [
         href: "/dashboard/rebalance",
     },
     {
-        label: "USDCKit Test",
+        label: "BridgeKit (Beta)",
         icon: Sparkles,
         href: "/dashboard/bridgekit-test",
     },
