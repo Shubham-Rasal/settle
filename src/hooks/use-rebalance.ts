@@ -66,6 +66,16 @@ export type RebalanceStep =
 
 // Map blockchain types to chain IDs
 const BLOCKCHAIN_TO_CHAIN_ID: Record<Blockchain, number> = {
+  // Mainnet chains
+  [Blockchain.ETH]: 1,
+  [Blockchain.MATIC]: 137,
+  [Blockchain.ARB]: 42161,
+  [Blockchain.BASE]: 8453,
+  [Blockchain.AVAX]: 43114,
+  [Blockchain.OP]: 10,
+  [Blockchain.SOL]: 1,
+  [Blockchain.LINEA]: 59144,
+  // Testnet chains
   [Blockchain.ETH_SEPOLIA]: 11155111,
   [Blockchain.ARB_SEPOLIA]: 421614,
   [Blockchain.BASE_SEPOLIA]: 84532,
