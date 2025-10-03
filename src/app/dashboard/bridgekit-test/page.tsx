@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAccount } from "wagmi";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ConnectKitButton } from "connectkit";
 import { toast } from "sonner";
 import { Loader2, RefreshCw } from "lucide-react";
 
@@ -176,7 +176,7 @@ export default function BridgeKitTestPage() {
                 {isConnected ? "Connected" : "Not connected"}
               </p>
             </div>
-            <ConnectButton />
+            <ConnectKitButton />
           </div>
         </TestCard>
 

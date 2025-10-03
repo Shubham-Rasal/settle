@@ -19,7 +19,7 @@ import { RebalanceTimer } from "@/components/dashboard/rebalance-timer"
 import { RebalanceLog } from "@/components/dashboard/rebalance-log"
 import { useRebalance } from "@/hooks/use-rebalance"
 import { useAccount } from "wagmi"
-import { ConnectButton } from "@rainbow-me/rainbowkit"
+import { ConnectKitButton } from "connectkit"
 import { RefreshCw } from "lucide-react"
 
 interface Wallet {
@@ -485,7 +485,7 @@ function ManualRebalance({
                   Please connect your wallet to proceed with the rebalance
                 </p>
                 <div className="mt-3">
-                  <ConnectButton />
+                  <ConnectKitButton />
                 </div>
               </div>
             </div>

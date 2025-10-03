@@ -39,11 +39,6 @@ const routes = [
         href: "/dashboard/rebalance",
     },
     {
-        label: "BridgeKit (Beta)",
-        icon: Sparkles,
-        href: "/dashboard/bridgekit-test",
-    },
-    {
         label: "Transactions",
         icon: ArrowLeftRight,
         href: "/dashboard/transactions",

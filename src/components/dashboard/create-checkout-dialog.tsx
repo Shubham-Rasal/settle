@@ -14,8 +14,18 @@ import { Blockchain, blockchainNames } from "@/lib/types";
 const CHAINS = Object.entries(Blockchain).map(([key, value]) => {
   // Map blockchain enum values to checkout chain identifiers
   const chainMapping: Record<Blockchain, string> = {
+    // Mainnet chains
+    [Blockchain.ETH]: "ethereum",
+    [Blockchain.MATIC]: "polygon",
+    [Blockchain.ARB]: "arbitrum",
+    [Blockchain.BASE]: "base",
+    [Blockchain.AVAX]: "avalanche",
+    [Blockchain.OP]: "optimism",
+    [Blockchain.SOL]: "solana",
+    [Blockchain.LINEA]: "linea",
+    // Testnet chains
     [Blockchain.ETH_SEPOLIA]: "ethereum",
-    [Blockchain.MATIC_AMOY]: "polygon", 
+    [Blockchain.MATIC_AMOY]: "polygon",
     [Blockchain.ARB_SEPOLIA]: "arbitrum",
     [Blockchain.OP_SEPOLIA]: "optimism",
     [Blockchain.BASE_SEPOLIA]: "base",

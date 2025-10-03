@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Check, Copy, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { ConnectKitButton } from 'connectkit';
 import { useAccount, useChainId, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { parseUnits, isAddress } from 'viem';
 import { 
@@ -466,7 +466,7 @@ export default function PublicCheckoutPage() {
         {!isConnected ? (
           <div className="space-y-4">
             <div className="flex justify-center">
-              <ConnectButton />
+              <ConnectKitButton />
             </div>
             <p className="text-xs text-center text-muted-foreground">
               Connect your wallet to proceed with payment
