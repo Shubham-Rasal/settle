@@ -140,8 +140,25 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
+      {/* New Feature Banner */}
+      <div className="bg-primary/10 border-b border-primary/20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="py-3 flex items-center justify-around">
+            <div className="flex items-center gap-2">
+              <span className="bg-primary/20 text-primary text-xs px-2 py-1 rounded-full font-medium">NEW</span>
+              <p className="text-sm text-primary">
+                Cross-chain bridge is now available! Transfer USDC between chains instantly.
+              </p>
+            </div>
+            <Link href="/bridge" className="text-sm text-primary hover:text-primary/80 font-medium">
+              Try it now →
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Top Navigation */}
-      <nav className="fixed w-full z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="h-14 flex items-center justify-between">
             <div className="flex items-center space-x-6">
@@ -163,7 +180,7 @@ export default function Home() {
         </div>
       </nav>
 
-      <main className="flex-grow pt-14">
+      <main className="flex-grow">
         {/* Hero Section */}
         <div className="container mx-auto px-4 sm:px-6">
           <div className="py-16 sm:py-24 md:py-32 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
@@ -184,7 +201,7 @@ export default function Home() {
                   </Link>
                   <Link href="/login">
                     <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                      Sign In with Email
+                      Get started →
                     </Button>
                   </Link>
                 </div>

@@ -4,6 +4,7 @@ import "./globals.css"
 import { Toaster } from "sonner"
 import { Providers } from "@/components/providers"
 import { Analytics } from "@vercel/analytics/react"
+import { ConnectKitButton } from "connectkit"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme="default-dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+     
         <Providers>
+
           {children}
         </Providers>
         <Toaster />
