@@ -19,6 +19,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Settle",
   description: "USDC based Universal Merchant Payment Gateway",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://settle.finance'),
 }
 
 export default function RootLayout({
