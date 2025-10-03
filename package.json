@@ -57,7 +57,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/connectkit": "^1.7.2",
     "drizzle-kit": "^0.31.4",
     "tailwindcss": "^4",
     "tsx": "^4.20.3",
