@@ -1,4 +1,15 @@
 export enum Blockchain {
+  // Mainnet chains
+  ETH = "ETH",
+  MATIC = "MATIC",
+  ARB = "ARB",
+  BASE = "BASE",
+  AVAX = "AVAX",
+  OP = "OP",
+  SOL = "SOL",
+  LINEA = "LINEA",
+  
+  // Testnet chains
   ETH_SEPOLIA = "ETH-SEPOLIA",
   MATIC_AMOY = "MATIC-AMOY",
   ARB_SEPOLIA = "ARB-SEPOLIA",
@@ -11,6 +22,17 @@ export enum Blockchain {
 }
 
 export const blockchainNames: Record<Blockchain, string> = {
+  // Mainnet chains
+  [Blockchain.ETH]: "Ethereum",
+  [Blockchain.MATIC]: "Polygon",
+  [Blockchain.ARB]: "Arbitrum",
+  [Blockchain.BASE]: "Base",
+  [Blockchain.AVAX]: "Avalanche",
+  [Blockchain.OP]: "Optimism",
+  [Blockchain.SOL]: "Solana",
+  [Blockchain.LINEA]: "Linea",
+  
+  // Testnet chains
   [Blockchain.ETH_SEPOLIA]: "Ethereum Sepolia",
   [Blockchain.MATIC_AMOY]: "Polygon Amoy",
   [Blockchain.ARB_SEPOLIA]: "Arbitrum Sepolia",
@@ -23,6 +45,17 @@ export const blockchainNames: Record<Blockchain, string> = {
 };
 
 export const blockchainLogos: Record<Blockchain, string> = {
+  // Mainnet chains
+  [Blockchain.ETH]: "/chains/ethereum.svg",
+  [Blockchain.MATIC]: "/chains/polygon.svg",
+  [Blockchain.ARB]: "/chains/arbitrum.svg",
+  [Blockchain.BASE]: "/chains/base.svg",
+  [Blockchain.AVAX]: "/chains/avalanche.svg",
+  [Blockchain.OP]: "/chains/optimism.svg",
+  [Blockchain.SOL]: "/chains/solana.svg",
+  [Blockchain.LINEA]: "/chains/linea.svg",
+  
+  // Testnet chains
   [Blockchain.ETH_SEPOLIA]: "/chains/ethereum.svg",
   [Blockchain.MATIC_AMOY]: "/chains/polygon.svg",
   [Blockchain.ARB_SEPOLIA]: "/chains/arbitrum.svg",
